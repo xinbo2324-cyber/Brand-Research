@@ -432,12 +432,12 @@ tr:hover td{background:rgba(102,126,234,.02)}
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
           <label style="font-size:11px;color:var(--text-secondary);font-weight:500;display:block;margin-bottom:4px">GitHub Token</label>
-          <input type="password" id="syncToken" placeholder="github_pat_xxxxxxxxxxxx" value="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" readonly style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;outline:none;box-sizing:border-box;font-family:'SF Mono',Monaco,Consolas,monospace;background:var(--bg)">
+          <input type="password" id="syncToken" placeholder="github_pat_xxxxxxxxxxxx" value="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" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;outline:none;box-sizing:border-box;font-family:'SF Mono',Monaco,Consolas,monospace">
           <div style="font-size:10px;color:var(--text-muted);margin-top:4px">获取：GitHub → Settings → Developer Settings → Personal access tokens</div>
         </div>
         <div>
           <label style="font-size:11px;color:var(--text-secondary);font-weight:500;display:block;margin-bottom:4px">Gist ID（首次留空）</label>
-          <input type="text" id="syncGistId" placeholder="留空自动生成" value="f03ed8f57d4264f0bc011529d2a83313" readonly style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;outline:none;box-sizing:border-box;font-family:'SF Mono',Monaco,Consolas,monospace;background:var(--bg)">
+          <input type="text" id="syncGistId" placeholder="留空自动生成" value="c99e36ea2550c43f77acf015d3e20a6a" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;outline:none;box-sizing:border-box;font-family:'SF Mono',Monaco,Consolas,monospace">
           <div style="font-size:10px;color:var(--text-muted);margin-top:4px">创建后自动填入，分享给同事即可同步</div>
         </div>
       </div>
@@ -3171,8 +3171,9 @@ function exportInsightReport(){
 
 // ========== DATA SYNC MODAL ==========
 function openSyncModal(){
-  document.getElementById('syncToken').value='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';
-  document.getElementById('syncGistId').value='f03ed8f57d4264f0bc011529d2a83313';
+  const saved=JSON.parse(localStorage.getItem('syncConfig')||'{}');
+  document.getElementById('syncToken').value=saved.token||'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';
+  document.getElementById('syncGistId').value=saved.gistId||'c99e36ea2550c43f77acf015d3e20a6a';
   document.getElementById('syncModal').classList.add('active');
 }
 function closeSyncModal(){document.getElementById('syncModal').classList.remove('active')}
