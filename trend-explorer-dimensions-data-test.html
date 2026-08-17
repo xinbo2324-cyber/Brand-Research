@@ -2765,6 +2765,7 @@ let refreshTimer=null;
         prepareMainData(parsed.data,parsed.months);
         if(parsed.version)currentDataVersion=parsed.version;
         rebuildFilterOptions();applyFilters();
+        if(parsed.version==='bundled-v5')document.getElementById('headerDesc').textContent='品牌调研数据.xlsx · '+ALL_DATA.length+'条记录 · '+MONTHS.length+'个月度';
       }
     }
   }catch(e){}
