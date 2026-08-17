@@ -2774,7 +2774,7 @@ let refreshTimer=null;
     prepareMainData(DEFAULT_ALL_DATA,DEFAULT_MONTHS);
     rebuildFilterOptions();applyFilters();
   }
-  if(currentDataVersion==='1.0.0')loadBundledV5Data();
+  loadBundledV5Data();
   try{
     const saved=localStorage.getItem('NC_DATA');
     if(saved){NC_DATA=JSON.parse(saved)}else if(typeof DEFAULT_NC_DATA!=='undefined'){NC_DATA=DEFAULT_NC_DATA}
