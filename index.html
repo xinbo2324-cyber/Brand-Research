@@ -440,6 +440,10 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 .ai-panel{border-color:#e2e7f1}.ai-panel-header{background:#4968d8}.ai-chat{background:#f4f6fb}
 .footer{color:#7b879d}
 @media(max-width:700px){.header{padding:16px 18px}.tab-bar{padding:0 12px}.tab-page{padding:18px 14px 28px}.trend-explorer-toolbar{padding:12px}.chart-card,.table-card,.filter-panel{padding:16px}}
+.trend-explorer-filter-panel{padding:14px;border:1px solid #e4e9f3;border-radius:10px;background:#fbfcff;margin-bottom:16px}
+.trend-explorer-filter-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:var(--text);font-size:12px}
+.trend-explorer-filter-head strong{font-size:13px}.trend-explorer-filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}.trend-explorer-filter-row .filter-group{flex:1 1 150px;min-width:150px}.trend-explorer-filter-row .filter-group select{width:100%}
+.trend-explorer-filter-summary{margin-top:10px;color:var(--text-muted);font-size:11px;min-height:16px}.trend-explorer-filter-summary.active{color:#4968d8;font-weight:600}
 </style>
 </head>
 <body>
@@ -447,8 +451,8 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 <div class="header">
   <div class="header-top">
     <div>
-      <h1>品牌市场调研分析仪表盘 <span class="beta-badge">维度扩展 · 新数据测试版</span></h1>
-      <p id="headerDesc">支持导入xlsx文件 · 自动识别表头 · 多维度数据分析 · AI智能对话</p>
+      <h1>品牌市场调研分析仪表盘 <span class="beta-badge">父体去重 · 快照趋势版</span></h1>
+      <p id="headerDesc">汇总数据正式版 · 同月父ASIN去重 · 多维度趋势分析</p>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
       <div style="display:flex;gap:6px">
@@ -699,9 +703,14 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
   </div>
   <div class="chart-card full trend-explorer-card" style="margin-bottom:20px">
     <h3>趋势探索器 <span class="tag tag-ai">BETA</span></h3>
-    <p style="font-size:11px;color:#999;margin:0 0 12px">将品牌、品类、面料、袖子、风格、价格与评分梯度等维度集中到一张图和一张透视表中；口径仅跟随本页筛选条件与时间范围。</p>
+    <p style="font-size:11px;color:#999;margin:0 0 12px">趋势按2026年4–8月数据快照统计；同月父ASIN只保留抓取时间最新的一条，不同月份允许同一父体重复出现。</p>
+    <div class="trend-explorer-filter-panel">
+      <div class="trend-explorer-filter-head"><strong>组合筛选</strong><button class="btn btn-reset" type="button" onclick="resetTrendExplorerFilters()">清空组合筛选</button></div>
+      <div class="trend-explorer-filter-row" id="trendExplorerFilterRow"></div>
+      <div class="trend-explorer-filter-summary" id="trendExplorerFilterSummary">未设置组合条件，使用趋势页筛选结果</div>
+    </div>
     <div class="trend-explorer-toolbar">
-      <div class="filter-group"><label>分析维度</label><select id="trendExplorerDimension" onchange="applyFilters()"><option value="品牌">品牌</option><option value="品类">品类</option><option value="小类">小类</option><option value="面料类型">面料类型</option><option value="袖子类型">袖子类型</option><option value="袖边类型">袖边类型</option><option value="领型">领型</option><option value="风格">风格</option><option value="图案类型">图案类型</option><option value="印花类型">印花类型</option><option value="颜色">颜色</option><option value="价格梯度">价格梯度</option><option value="评分数梯度">评分数梯度</option><option value="评分梯度">评分梯度</option></select></div>
+      <div class="filter-group"><label>分析维度</label><select id="trendExplorerDimension" onchange="applyFilters()"><option value="品牌">品牌</option><option value="品类">品类</option><option value="小类">小类</option><option value="是否衬衫">是否衬衫</option><option value="版型">版型</option><option value="面料类型">面料类型</option><option value="袖子类型">袖子类型</option><option value="袖边类型">袖边类型</option><option value="领型">领型</option><option value="风格">风格</option><option value="弹力等级">弹力等级</option><option value="克重等级">克重等级</option><option value="闭合方式">闭合方式</option><option value="商品状态">商品状态</option><option value="价格梯度">价格梯度</option><option value="评分数梯度">评分数梯度</option><option value="评分梯度">评分梯度</option></select></div>
       <div class="filter-group"><label>趋势指标</label><select id="trendExplorerMetric" onchange="applyFilters()"><option value="sales">销量</option><option value="share">市场份额</option><option value="products">活跃产品数</option><option value="new">当月上新数</option></select></div>
       <div class="filter-group"><label>展示对象</label><select id="trendExplorerTopN" onchange="applyFilters()"><option value="3">TOP 3</option><option value="6" selected>TOP 6</option><option value="10">TOP 10</option></select></div>
       <div class="trend-explorer-note">提示：图例可单独隐藏对象；透视表支持横向滚动查看每个月的完整数值。</div>
@@ -715,7 +724,6 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card full"><h3>风格 × 销量趋势</h3><p style="font-size:11px;color:#999;margin:0 0 8px">计算方式：各风格在各月的销量总和，取TOP6风格</p><div class="trend-filter-bar" id="trendBar-style"></div><div class="chart-wrap tall"><canvas id="chartStyleTrend"></canvas></div></div>
     <div class="chart-card full"><h3>袖子类型 × 销量趋势</h3><p style="font-size:11px;color:#999;margin:0 0 8px">计算方式：各袖子类型在各月的销量总和</p><div class="trend-filter-bar" id="trendBar-sleeve"></div><div class="chart-wrap tall"><canvas id="chartSleeveTrend"></canvas></div></div>
     <div class="chart-card full"><h3>领型 × 销量趋势</h3><p style="font-size:11px;color:#999;margin:0 0 8px">计算方式：各领型在各月的销量总和，取TOP6领型</p><div class="trend-filter-bar" id="trendBar-neck"></div><div class="chart-wrap tall"><canvas id="chartNeckTrend"></canvas></div></div>
-    <div class="chart-card full"><h3>图案类型 × 销量趋势</h3><p style="font-size:11px;color:#999;margin:0 0 8px">计算方式：各图案类型在各月的销量总和，取TOP6图案</p><div class="trend-filter-bar" id="trendBar-pattern"></div><div class="chart-wrap tall"><canvas id="chartPatternTrend"></canvas></div></div>
     <div class="chart-card full"><h3>价格梯度 × 销量趋势</h3><p style="font-size:11px;color:#999;margin:0 0 8px">计算方式：各价格梯度在各月的销量总和</p><div class="trend-filter-bar" id="trendBar-price"></div><div class="chart-wrap tall"><canvas id="chartPriceTrend"></canvas></div></div>
   </div>
 </div>
@@ -855,6 +863,8 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
+        <div class="update-log-item"><div class="update-log-date">2026-09-14<br>正式版</div><div><strong>汇总快照与父体去重（新增）</strong>导入4–8月汇总数据；按“月份 + 父ASIN”去重，同月保留抓取时间最新记录，不同月份允许相同父体出现。新增是否衬衫、版型、弹力等级、克重等级、闭合方式和商品状态，暂不加入卖家国家、卖家类型和图案类型；晚于8月快照的2026-09销量不进入统计。</div></div>
+        <div class="update-log-item"><div class="update-log-date">2026-08-19<br>测试版</div><div><strong>趋势探索器组合筛选（新增）</strong>可同时选择品牌、风格、面料、品类、袖子类型等条件，组合筛选只作用于趋势探索器的趋势图、透视表和指标结果。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-08-17<br>测试版</div><div><strong>维度扩展与新数据（新增）</strong>趋势探索器新增袖子、袖边、领型、图案、印花、颜色、评分梯度等分析维度；默认加载 1,227 条新数据，并将源字段“袖长”映射为“袖子类型”。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-08-14<br>测试版</div><div><strong>BSR 风格界面（新增）</strong>以 BSR 看板为参照，统一为浅灰蓝背景、白色信息卡、紧凑筛选区与更清晰的页签层级；仅调整视觉呈现，不改变原有数据与统计逻辑。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-08-13<br>测试版</div><div><strong>趋势探索器（新增）</strong>在趋势分析页新增统一的多维趋势图和“维度 × 月份”透视表，可切换品牌、面料、风格、价格带、品类、小类，以及销量、份额、活跃产品数、当月上新数。</div></div>
@@ -1109,11 +1119,15 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 // ========== SYSTEM FIELDS ==========
 const SYSTEM_FIELDS=[
   {key:'图案类型',label:'图案类型',cat:'属性',aliases:['图案类型','图案']},{key:'印花类型',label:'印花类型',cat:'属性'},
-  {key:'袖子类型',label:'袖子类型',cat:'属性',aliases:['袖子类型','袖型','袖长']},{key:'面料类型',label:'面料类型',cat:'属性',aliases:['面料类型','面料']},
-  {key:'袖边类型',label:'袖边类型',cat:'属性'},{key:'领型',label:'领型',cat:'属性'},
-  {key:'风格',label:'风格',cat:'属性'},{key:'品类',label:'品类',cat:'属性',aliases:['品类','category','大类']},{key:'小类',label:'小类',cat:'属性'},
+  {key:'袖子类型',label:'袖子类型',cat:'属性',aliases:['袖子类型','袖型','袖长']},{key:'面料类型',label:'面料类型',cat:'属性',aliases:['面料类型','材质大类','面料']},
+  {key:'袖边类型',label:'袖边类型',cat:'属性',aliases:['袖边类型','袖口']},{key:'领型',label:'领型',cat:'属性'},
+  {key:'风格',label:'风格',cat:'属性',aliases:['风格','场合风格']},{key:'品类',label:'品类',cat:'属性',aliases:['品类','类目','category','大类']},{key:'小类',label:'小类',cat:'属性'},
+  {key:'是否衬衫',label:'是否衬衫',cat:'属性'},{key:'版型',label:'版型',cat:'属性'},
+  {key:'弹力等级',label:'弹力等级',cat:'属性'},{key:'克重等级',label:'克重等级',cat:'属性'},
+  {key:'闭合方式',label:'闭合方式',cat:'属性'},{key:'商品状态',label:'商品状态',cat:'属性',aliases:['商品状态','属性状态']},
   {key:'颜色',label:'颜色',cat:'属性'},{key:'品牌',label:'品牌',cat:'属性',aliases:['品牌','brand','品牌名']},
   {key:'竞品ASIN',label:'ASIN',cat:'属性',aliases:['竞品ASIN','竞品AS','ASIN','asin']},
+  {key:'父ASIN',label:'父ASIN',cat:'属性'},{key:'月份',label:'月份',cat:'日期'},{key:'抓取时间',label:'抓取时间',cat:'日期'},
   {key:'链接',label:'链接',cat:'链接',aliases:['链接','url','link','产品链接']},
   {key:'价格梯度',label:'价格梯度',cat:'梯度'},{key:'评分数梯度',label:'评分数梯度',cat:'梯度'},{key:'评分梯度',label:'评分梯度',cat:'梯度'},
   {key:'Buybox价格',label:'Buybox价格',cat:'数值'},{key:'评分',label:'评分',cat:'数值'},
@@ -1124,7 +1138,7 @@ const SYSTEM_FIELDS=[
   {key:'链接',label:'链接',cat:'链接'},
 ];
 
-let ALL_DATA=[],MONTHS=[],importedFileName='';
+let ALL_DATA=[],MONTHS=[],TREND_DATA=[],TREND_MONTHS=[],importedFileName='';
 const COLORS=['#667eea','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0','#a18cd1','#fbc2eb','#8fd3f4','#ff9a9e','#fad0c4','#ffecd2','#fcb69f','#a1c4fd','#c2e9fb'];
 function getColor(i){return COLORS[i%COLORS.length]}
 
@@ -1371,7 +1385,7 @@ function isSuccessNewProduct(d){return d._isNew&&safeNum(d['大类排名'])>0&&s
 const BRAND_CANONICAL={};
 function normalizeBrand(raw){if(!raw||raw==='暂无')return raw;const lc=raw.toLowerCase().trim();if(BRAND_CANONICAL[lc])return BRAND_CANONICAL[lc];BRAND_CANONICAL[lc]=raw;return raw}
 function getBrandDisplay(raw){return BRAND_CANONICAL[raw.toLowerCase().trim()]||raw}
-const MAIN_TEXT_FIELDS=['图案类型','印花类型','袖子类型','面料类型','袖边类型','领型','风格','品类','小类','颜色','品牌','价格梯度','评分数梯度','评分梯度','竞品ASIN','链接'];
+const MAIN_TEXT_FIELDS=['图案类型','印花类型','袖子类型','面料类型','袖边类型','领型','风格','品类','小类','颜色','品牌','是否衬衫','版型','弹力等级','克重等级','闭合方式','商品状态','价格梯度','评分数梯度','评分梯度','竞品ASIN','父ASIN','链接'];
 const MAIN_NUMERIC_FIELDS=['Buybox价格','评分','父体Rating数','大类排名','小类排名','变体数','FBA运费','销售天数'];
 function normalizeMainRecord(raw){const item={...raw};MAIN_TEXT_FIELDS.forEach(key=>{if(item[key]!==undefined&&item[key]!==null)item[key]=String(item[key]).trim()});MAIN_NUMERIC_FIELDS.forEach(key=>{if(String(item[key]??'').trim()==='92')item[key]=''});if(item.sales){const sales={};Object.keys(item.sales).forEach(m=>{sales[m]=String(item.sales[m]??'').trim()==='92'?0:item.sales[m]});item.sales=sales}item['品牌']=normalizeBrand(item['品牌']);return item}
 function prepareMainData(rawData,rawMonths){MONTHS=[...new Set((rawMonths||[]).map(String).filter(m=>/^\d{6}$/.test(m)))].sort();const base=document.getElementById('fBaseMonth');if(base&&base.value&&!MONTHS.includes(base.value))base.value='';ALL_DATA=(rawData||[]).map(d=>{const item=normalizeMainRecord(d);item._isNew=isNewProduct(item);item._isSuccessNew=item._isNew&&isSuccessNewProduct(item);return item})}
@@ -1500,22 +1514,78 @@ function handleFile(file){
   reader.readAsArrayBuffer(file);
 }
 function buildColumnMapping(){columnMapping={};const tbody=document.querySelector('#columnMapTable tbody');tbody.innerHTML='';SYSTEM_FIELDS.forEach(field=>{let matched='';if(pendingHeaders.includes(field.key))matched=field.key;else if(field.aliases){matched=field.aliases.find(a=>pendingHeaders.includes(a))||field.aliases.find(a=>pendingHeaders.find(h=>h.toLowerCase()===a.toLowerCase()))||field.aliases.find(a=>pendingHeaders.find(h=>h.includes(a)||a.includes(h)))||''}else{const lc=field.key.toLowerCase();matched=pendingHeaders.find(h=>h.toLowerCase()===lc)||pendingHeaders.find(h=>h.includes(field.key)||field.key.includes(h))||''}columnMapping[field.key]=matched;const tr=document.createElement('tr');tr.innerHTML=`<td><strong>${field.label}</strong> <span style="color:#999;font-size:10px">(${field.cat})</span></td><td><select data-field="${field.key}" onchange="columnMapping[this.dataset.field]=this.value"><option value="">--跳过--</option>${pendingHeaders.map(h=>`<option value="${h}" ${h===matched?'selected':''}>${h}</option>`).join('')}</select></td><td style="color:${matched?'#1a9957':'#d32f2f'}">${matched?'✓':'⚠'}</td>`;tbody.appendChild(tr)})}
-function confirmImportData(){const status=document.getElementById('importStatus');status.className='import-status loading';status.textContent='导入中...';const monthPattern=/^(?:父体销量|Sales?_?)(\d{4})(\d{2})$/i;const dm=[];pendingHeaders.forEach(h=>{const m=h.match(monthPattern);if(m){const ym=m[1]+m[2];if(!dm.includes(ym))dm.push(ym)}if(/^20\d{4}$/.test(h)&&!dm.includes(h))dm.push(h)});dm.sort();MONTHS=dm;ALL_DATA=pendingRows.map(row=>{const item={};SYSTEM_FIELDS.forEach(f=>{item[f.key]=columnMapping[f.key]?String(row[columnMapping[f.key]]||''):''});const sales={};MONTHS.forEach(m=>{let val=0;['父体销量'+m,'Sales_'+m,m].forEach(p=>{if(row[p]!==undefined)val=safeNum(row[p])});if(!val){const mh=pendingHeaders.find(h=>h.includes(m));if(mh)val=safeNum(row[mh])}sales[m]=val});item.sales=sales;const normalized=normalizeMainRecord(item);normalized._isNew=isNewProduct(normalized);normalized._isSuccessNew=normalized._isNew&&isSuccessNewProduct(normalized);return normalized});rebuildFilterOptions();applyFilters();try{localStorage.setItem('cachedData',JSON.stringify({data:ALL_DATA,months:MONTHS,version:'imported-'+Date.now(),time:Date.now()}))}catch(e){}status.className='import-status success';status.textContent=`导入成功${ALL_DATA.length}条`;document.getElementById('headerDesc').textContent=`${importedFileName} · ${ALL_DATA.length}条记录 · ${MONTHS.length}个月度`;saveRecentFile(importedFileName);closeImportModal()}
+function confirmImportData(){
+  const status=document.getElementById('importStatus');status.className='import-status loading';status.textContent='导入中...';
+  if(pendingHeaders.includes('月份')&&pendingHeaders.includes('父ASIN')){prepareSummaryRows(pendingRows,importedFileName);status.className='import-status success';status.textContent='导入成功';saveRecentFile(importedFileName);closeImportModal();return}
+  const monthPattern=/^(?:父体销量|Sales?_?)(\d{4})(\d{2})$/i,dm=[];pendingHeaders.forEach(h=>{const m=h.match(monthPattern);if(m){const ym=m[1]+m[2];if(!dm.includes(ym))dm.push(ym)}if(/^20\d{4}$/.test(h)&&!dm.includes(h))dm.push(h)});dm.sort();MONTHS=dm;
+  ALL_DATA=pendingRows.map(row=>{const item={};SYSTEM_FIELDS.forEach(f=>{item[f.key]=columnMapping[f.key]?String(row[columnMapping[f.key]]||''):''});item.sales=Object.fromEntries(MONTHS.map(m=>[m,safeNum(row['父体销量'+m]??row['Sales_'+m]??row[m])]));const normalized=normalizeMainRecord(item);normalized._isNew=isNewProduct(normalized);normalized._isSuccessNew=normalized._isNew&&isSuccessNewProduct(normalized);return normalized});TREND_DATA=[];TREND_MONTHS=[];
+  rebuildFilterOptions();applyFilters();status.className='import-status success';status.textContent=`导入成功${ALL_DATA.length}条`;document.getElementById('headerDesc').textContent=`${importedFileName} · ${ALL_DATA.length}条记录 · ${MONTHS.length}个月度`;saveRecentFile(importedFileName);closeImportModal();
+}
 
 function bundledPriceBand(value){const p=safeNum(value);if(!p)return'';if(p<5)return'5以下';if(p<10)return'5-9.99';if(p<15)return'10-14.99';if(p<20)return'15-19.99';if(p<25)return'20-24.99';if(p<30)return'25-29.99';return'30以上'}
-async function loadBundledV5Data(){
+function bundledRatingCountBand(value){const n=safeNum(value);if(n<200)return'0-199';if(n<500)return'200-499';if(n<1000)return'500-999';if(n<3000)return'1000-2999';if(n<5000)return'3000-4999';return'5000以上'}
+function bundledRatingBand(value){const n=safeNum(value);if(!n)return'';if(n<4)return'4分以下';if(n>=4.5)return'4.5分以上';return n.toFixed(1)+'分'}
+function normalizeFitValue(value){const raw=String(value||'').trim(),v=raw.toLowerCase();if(!raw)return'';if(['常规','宽松','修身','弹力贴身','运动版型'].includes(raw))return raw;if(/straight/.test(v))return'直筒';if(/plus|big & tall/.test(v))return'大码';if(/tailored|fitted|slim/.test(v))return'修身';if(/casual|comfortable|moderate|overall|semi|regular|classic/.test(v))return'常规';return''}
+function normalizeClosureValue(value){const raw=String(value||'').trim(),v=raw.toLowerCase();if(!raw)return'';if(['套头','纽扣','抽绳','拉链','松紧','钩扣','按扣','插扣','系带'].includes(raw))return raw;if(/button/.test(v))return'纽扣';if(/zip/.test(v))return'拉链';if(/drawstring/.test(v))return'抽绳';if(/lace|bow|strap/.test(v))return'系带';if(/clasp|ring/.test(v))return'钩扣';if(/open|no closure|no laces/.test(v))return'无闭合';return''}
+let SUMMARY_SNAPSHOT_YEAR='';
+function summarySnapshotMonth(row){const month=String(row['月份']||'').match(/(\d{1,2})月/),rowYear=String(row['抓取时间']||'').match(/(20\d{2})/),year=SUMMARY_SNAPSHOT_YEAR||(rowYear?rowYear[1]:'');return month&&year?year+String(parseInt(month[1])).padStart(2,'0'):''}
+function summaryDateRank(value){const m=String(value||'').match(/(20\d{2})[-\/]?(\d{1,2})[-\/]?(\d{1,2})/);return m?Number(m[1])*10000+Number(m[2])*100+Number(m[3]):0}
+function dedupeSummaryRows(rows){
+  const grouped=new Map();let sameTimeConflicts=0;
+  rows.forEach(row=>{const month=summarySnapshotMonth(row),parent=String(row['父ASIN']||row['竞品ASIN']||'').trim();if(!month||!parent)return;const key=month+'|'+parent,current=grouped.get(key),rank=summaryDateRank(row['抓取时间']);if(!current||rank>current.rank){grouped.set(key,{row,rank,month,parent});return}if(rank===current.rank&&safeNum(row['父体销量'+month])!==safeNum(current.row['父体销量'+month])){current.row.__salesConflict=true;sameTimeConflicts++}});
+  return {items:[...grouped.values()],sameTimeConflicts};
+}
+function mapSummaryRow(source,months,snapshotOnly){
+  const aliases={'面料类型':['材质大类'],'袖边类型':['袖口'],'风格':['场合风格'],'品类':['类目'],'商品状态':['属性状态']},item={};
+  SYSTEM_FIELDS.forEach(field=>{const candidates=[field.key,...(aliases[field.key]||[]),...(field.aliases||[])],sourceKey=candidates.find(key=>Object.prototype.hasOwnProperty.call(source,key));item[field.key]=sourceKey?String(source[sourceKey]??'').trim():''});
+  item['图案类型']='';item['印花类型']='';item['竞品ASIN']=item['父ASIN']||item['竞品ASIN'];item['版型']=normalizeFitValue(item['版型']);item['闭合方式']=normalizeClosureValue(item['闭合方式']);item['价格梯度']=bundledPriceBand(item['Buybox价格']);item['评分数梯度']=bundledRatingCountBand(item['父体Rating数']);item['评分梯度']=bundledRatingBand(item['评分']);item._snapshotMonth=summarySnapshotMonth(source);item._salesConflict=source.__salesConflict===true;
+  item.sales=Object.fromEntries(months.map(month=>[month,snapshotOnly&&month!==item._snapshotMonth?0:safeNum(source['父体销量'+month])]));
+  const normalized=normalizeMainRecord(item);normalized._isNew=isNewProduct(normalized);normalized._isSuccessNew=normalized._isNew&&isSuccessNewProduct(normalized);return normalized;
+}
+function prepareSummaryRows(rows,sourceName){
+  const yearCounts={};rows.forEach(row=>{const m=String(row['抓取时间']||'').match(/(20\d{2})/);if(m)yearCounts[m[1]]=(yearCounts[m[1]]||0)+1});SUMMARY_SNAPSHOT_YEAR=Object.entries(yearCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
+  const sourceMonths=[...new Set(Object.keys(rows[0]||{}).map(h=>{const m=String(h).match(/^父体销量(20\d{4})$/);return m?m[1]:''}).filter(Boolean))].sort(),deduped=dedupeSummaryRows(rows),snapshotMonths=[...new Set(deduped.items.map(x=>x.month))].sort(),latest=snapshotMonths[snapshotMonths.length-1],allMonths=sourceMonths.filter(month=>month<=latest);
+  const latestData=deduped.items.filter(x=>x.month===latest).map(x=>mapSummaryRow(x.row,allMonths,false));
+  TREND_MONTHS=snapshotMonths;TREND_DATA=deduped.items.map(x=>mapSummaryRow(x.row,snapshotMonths,true));
+  prepareMainData(latestData,allMonths);currentDataVersion='summary-v7';window.SUMMARY_QA={sourceRows:rows.length,dedupedRows:deduped.items.length,latestParents:latestData.length,snapshotMonths,sameTimeConflicts:deduped.sameTimeConflicts};
+  rebuildFilterOptions();applyFilters();document.getElementById('headerDesc').textContent=`${sourceName} · 最新快照${latestData.length}个父体 · 趋势${snapshotMonths.length}个月 · 同月父体已去重`;
+}
+async function loadBundledV7Data(){
   try{
-    const response=await fetch('brand-research-data-v5.xlsx',{cache:'no-store'});if(!response.ok)throw new Error('数据文件加载失败');
+    const response=await fetch('brand-research-summary-v7.xlsx',{cache:'no-store'});if(!response.ok)throw new Error('数据文件加载失败');
     const wb=XLSX.read(await response.arrayBuffer(),{type:'array'}),sheet=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(sheet,{defval:''});if(!rows.length)return;
-    const headers=Object.keys(rows[0]),mapping={};
-    SYSTEM_FIELDS.forEach(field=>{const aliases=field.aliases||[field.key];mapping[field.key]=headers.includes(field.key)?field.key:aliases.find(a=>headers.includes(a))||aliases.map(a=>headers.find(h=>h.toLowerCase()===a.toLowerCase())||headers.find(h=>h.includes(a)||a.includes(h))).find(Boolean)||''});
-    const months=[...new Set(headers.map(h=>{const m=String(h).match(/^父体销量(20\d{4})$/);return m?m[1]:''}).filter(Boolean))].sort();if(!months.length)return;
-    const data=rows.map(row=>{const item={};SYSTEM_FIELDS.forEach(field=>item[field.key]=mapping[field.key]?String(row[mapping[field.key]]||''):'');item['价格梯度']=bundledPriceBand(item['Buybox价格']);item['评分数梯度']=String(row['价格梯度']||'');item['评分梯度']=String(row['评分数梯度']||'');item.sales=Object.fromEntries(months.map(m=>[m,safeNum(row['父体销量'+m])]));const normalized=normalizeMainRecord(item);normalized._isNew=isNewProduct(normalized);normalized._isSuccessNew=normalized._isNew&&isSuccessNewProduct(normalized);return normalized});
-    prepareMainData(data,months);currentDataVersion='bundled-v5';rebuildFilterOptions();applyFilters();localStorage.setItem('cachedData_dimensions_v5',JSON.stringify({data:ALL_DATA,months:MONTHS,version:currentDataVersion,time:Date.now()}));document.getElementById('headerDesc').textContent='品牌调研数据.xlsx · '+ALL_DATA.length+'条记录 · '+MONTHS.length+'个月度';
+    prepareSummaryRows(rows,'品牌调研数据汇总表格.xlsx');
   }catch(error){console.warn('默认数据加载失败',error)}
 }
 
 // ========== FILTERS ==========
+const TREND_EXPLORER_FILTER_DEFS=[
+  {id:'trendExplorerBrand',key:'品牌',label:'品牌'},
+  {id:'trendExplorerStyle',key:'风格',label:'风格'},
+  {id:'trendExplorerFabric',key:'面料类型',label:'面料'},
+  {id:'trendExplorerCategory',key:'品类',label:'品类'},
+  {id:'trendExplorerSubCategory',key:'小类',label:'小类'},
+  {id:'trendExplorerShirt',key:'是否衬衫',label:'是否衬衫'},
+  {id:'trendExplorerFit',key:'版型',label:'版型'},
+  {id:'trendExplorerSleeve',key:'袖子类型',label:'袖子类型'},
+  {id:'trendExplorerNeck',key:'领型',label:'领型'},
+  {id:'trendExplorerStretch',key:'弹力等级',label:'弹力等级'},
+  {id:'trendExplorerWeight',key:'克重等级',label:'克重等级'},
+  {id:'trendExplorerClosure',key:'闭合方式',label:'闭合方式'},
+  {id:'trendExplorerStatus',key:'商品状态',label:'商品状态'},
+  {id:'trendExplorerPrice',key:'价格梯度',label:'价格梯度'}
+];
+function rebuildTrendExplorerFilters(){
+  const row=document.getElementById('trendExplorerFilterRow');if(!row)return;row.innerHTML='';
+  TREND_EXPLORER_FILTER_DEFS.forEach(def=>{const values=[...new Set((TREND_DATA.length?TREND_DATA:ALL_DATA).map(d=>String(d[def.key]??'').trim()).filter(v=>v&&v!=='暂无'&&v!=='无'&&v!=='未知'))].sort((a,b)=>a.localeCompare(b,'zh-CN'));const group=document.createElement('div');group.className='filter-group';group.innerHTML=`<label>${def.label}</label><select id="${def.id}" onchange="applyFilters()"><option value="">全部</option>${values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('')}</select>`;row.appendChild(group)});
+}
+function filterTrendExplorerData(source){
+  let data=source;TREND_EXPLORER_FILTER_DEFS.forEach(def=>{const el=document.getElementById(def.id);if(el&&el.value)data=data.filter(d=>String(d[def.key]??'').trim()===el.value)});
+  const summary=document.getElementById('trendExplorerFilterSummary');if(summary){const active=TREND_EXPLORER_FILTER_DEFS.map(def=>{const el=document.getElementById(def.id);return el&&el.value?`${def.label}：${el.value}`:''}).filter(Boolean);summary.textContent=active.length?'当前组合：'+active.join(' · '):'未设置组合条件，使用趋势页筛选结果';summary.classList.toggle('active',active.length>0)}
+  return data;
+}
+function resetTrendExplorerFilters(){TREND_EXPLORER_FILTER_DEFS.forEach(def=>{const el=document.getElementById(def.id);if(el)el.value=''});applyFilters()}
+
 function rebuildFilterOptions(){
   const defs=[{id:'fPattern',key:'图案类型',row:1},{id:'fSleeve',key:'袖子类型',row:1},{id:'fFabric',key:'面料类型',row:1},{id:'fNeck',key:'领型',row:1},{id:'fStyle',key:'风格',row:1},{id:'fCategory',key:'品类',row:1},{id:'fBrand',key:'品牌',row:1},{id:'fPriceRange',key:'价格梯度',row:2},{id:'fRatingCount',key:'评分数梯度',row:2},{id:'fRating',key:'评分梯度',row:2},{id:'fCuff',key:'袖边类型',row:2}];
   const r1=document.getElementById('filterRow1'),r2=document.getElementById('filterRow2');r1.innerHTML='';r2.innerHTML='';
@@ -1530,9 +1600,10 @@ function rebuildFilterOptions(){
   deepDefs.forEach(d=>{const vals=[...new Set(ALL_DATA.map(x=>x[d.key]).filter(v=>v&&v!=='暂无'&&v!=='无'&&v!=='未知'))].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));const div=document.createElement('div');div.className='filter-group';div.innerHTML=`<label>${d.key}</label><select id="${d.id}"><option value="">全部</option>${vals.slice(0,50).map(v=>`<option value="${v}">${v}</option>`).join('')}</select>`;(d.row===1?dr1:dr2).appendChild(div)});
   const subCats=[...new Set(ALL_DATA.map(d=>d['小类']).filter(v=>v&&v!=='暂无'))].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
   const scShare=document.getElementById('deepFilterSubCatShare');if(scShare)scShare.innerHTML='<option value="">选择小类</option>'+subCats.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
-  const tfDefs=[{id:'trendFilterPattern',key:'图案类型',row:1},{id:'trendFilterSleeve',key:'袖子类型',row:1},{id:'trendFilterFabric',key:'面料类型',row:1},{id:'trendFilterNeck',key:'领型',row:1},{id:'trendFilterCategory',key:'品类',row:1},{id:'trendFilterBrand',key:'品牌',row:1}];
+  const tfDefs=[{id:'trendFilterSleeve',key:'袖子类型',row:1},{id:'trendFilterFabric',key:'面料类型',row:1},{id:'trendFilterNeck',key:'领型',row:1},{id:'trendFilterCategory',key:'品类',row:1},{id:'trendFilterBrand',key:'品牌',row:1}];
   const tr1=document.getElementById('trendFilterRow1'),tr2=document.getElementById('trendFilterRow2');if(tr1)tr1.innerHTML='';if(tr2)tr2.innerHTML='';
-  tfDefs.forEach(d=>{const vals=[...new Set(ALL_DATA.map(x=>x[d.key]).filter(v=>v&&v!=='暂无'&&v!=='无'&&v!=='未知'))].sort();const div=document.createElement('div');div.className='filter-group';div.innerHTML=`<label>${d.key}</label><select id="${d.id}"><option value="">全部</option>${vals.map(v=>`<option value="${v}">${v}</option>`).join('')}</select>`;(d.row===1?tr1:tr2).appendChild(div)});
+  tfDefs.forEach(d=>{const vals=[...new Set((TREND_DATA.length?TREND_DATA:ALL_DATA).map(x=>x[d.key]).filter(v=>v&&v!=='暂无'&&v!=='无'&&v!=='未知'))].sort();const div=document.createElement('div');div.className='filter-group';div.innerHTML=`<label>${d.key}</label><select id="${d.id}"><option value="">全部</option>${vals.map(v=>`<option value="${v}">${v}</option>`).join('')}</select>`;(d.row===1?tr1:tr2).appendChild(div)});
+  rebuildTrendExplorerFilters();
   // Populate base month dropdown
   const bmEl=document.getElementById('fBaseMonth');
   if(bmEl){
@@ -1544,14 +1615,14 @@ function updateNewBaseMonth(){ALL_DATA.forEach(d=>{d._isNew=isNewProduct(d);d._i
 function withGlobalBrandFilter(source){let data=source;const gb=document.getElementById('globalBrandFilter');if(gb&&gb.value){const glc=gb.value.toLowerCase();data=data.filter(d=>String(d['品牌']||'').toLowerCase()===glc)}return data}
 function filterData(){let data=withGlobalBrandFilter(ALL_DATA);const f=(id,key)=>{const el=document.getElementById(id);if(el&&el.value)data=data.filter(d=>String(d[key]??'').trim()===String(el.value).trim())};const ff=(id,key)=>{const el=document.getElementById(id);if(el&&el.value){const lv=el.value.toLowerCase().trim();data=data.filter(d=>String(d[key]||'').toLowerCase().includes(lv))}};ff('fPattern','图案类型');ff('fFabric','面料类型');f('fSleeve','袖子类型');f('fNeck','领型');ff('fStyle','风格');f('fCategory','品类');const fb=document.getElementById('fBrand');if(fb&&fb.value){const flc=fb.value.toLowerCase();data=data.filter(d=>String(d['品牌']||'').toLowerCase()===flc)}f('fPriceRange','价格梯度');f('fRatingCount','评分数梯度');f('fRating','评分梯度');f('fCuff','袖边类型');const fn=document.getElementById('fNewProduct')?.value;if(fn==='new')data=data.filter(d=>d._isNew===true);else if(fn==='not_new')data=data.filter(d=>d._isNew!==true);const fs=document.getElementById('fSuccessNew')?.value;if(fs==='success')data=data.filter(d=>d._isSuccessNew===true);else if(fs==='not_success')data=data.filter(d=>d._isSuccessNew!==true);return data}
 function filterBrandData(){return withGlobalBrandFilter(ALL_DATA)}
-function filterTrendData(){let data=withGlobalBrandFilter(ALL_DATA);const f=(id,key)=>{const el=document.getElementById(id);if(el&&el.value)data=data.filter(d=>String(d[key]??'').trim()===String(el.value).trim())};const ff=(id,key)=>{const el=document.getElementById(id);if(el&&el.value){const lv=el.value.toLowerCase().trim();data=data.filter(d=>String(d[key]||'').toLowerCase().includes(lv))}};ff('trendFilterPattern','图案类型');ff('trendFilterFabric','面料类型');f('trendFilterSleeve','袖子类型');f('trendFilterNeck','领型');f('trendFilterCategory','品类');const brand=document.getElementById('trendFilterBrand');if(brand&&brand.value){const b=brand.value.toLowerCase();data=data.filter(d=>String(d['品牌']||'').toLowerCase()===b)}return data}
+function filterTrendData(){let data=withGlobalBrandFilter(TREND_DATA.length?TREND_DATA:ALL_DATA);const f=(id,key)=>{const el=document.getElementById(id);if(el&&el.value)data=data.filter(d=>String(d[key]??'').trim()===String(el.value).trim())};const ff=(id,key)=>{const el=document.getElementById(id);if(el&&el.value){const lv=el.value.toLowerCase().trim();data=data.filter(d=>String(d[key]||'').toLowerCase().includes(lv))}};ff('trendFilterFabric','面料类型');f('trendFilterSleeve','袖子类型');f('trendFilterNeck','领型');f('trendFilterCategory','品类');const brand=document.getElementById('trendFilterBrand');if(brand&&brand.value){const b=brand.value.toLowerCase();data=data.filter(d=>String(d['品牌']||'').toLowerCase()===b)}return data}
 function filterDeepData(){let data=withGlobalBrandFilter(ALL_DATA);const f=(id,key)=>{const el=document.getElementById(id);if(el&&el.value)data=data.filter(d=>String(d[key]??'').trim()===String(el.value).trim())};const ff=(id,key)=>{const el=document.getElementById(id);if(el&&el.value){const lv=el.value.toLowerCase().trim();data=data.filter(d=>String(d[key]||'').toLowerCase().includes(lv))}};ff('deepFilterPattern','图案类型');ff('deepFilterFabric','面料类型');f('deepFilterSleeve','袖子类型');f('deepFilterNeck','领型');f('deepFilterCategory','品类');const brand=document.getElementById('deepFilterBrand');if(brand&&brand.value){const b=brand.value.toLowerCase();data=data.filter(d=>String(d['品牌']||'').toLowerCase()===b)}f('deepFilterSubCat','小类');return data}
 function filterCompetitionData(){let data=withGlobalBrandFilter(ALL_DATA);const cat=document.getElementById('compFilterCategory');if(cat&&cat.value)data=data.filter(d=>String(d['品类']??'').trim()===String(cat.value).trim());return data}
 function getMonthsByRange(rangeId){const range=document.getElementById(rangeId)?.value||'all';let m=[...MONTHS];if(range==='2023')m=m.filter(x=>getYearNum(x)===2023);else if(range==='2024')m=m.filter(x=>getYearNum(x)===2024);else if(range==='2025')m=m.filter(x=>getYearNum(x)===2025);else if(range==='2026')m=m.filter(x=>getYearNum(x)===2026);else if(range==='last12')m=m.slice(-12);return m}
 function applyMonthWindow(months,startId,endId){const seasonStart=document.getElementById(startId)?.value||'';const seasonEnd=document.getElementById(endId)?.value||'';if(!seasonStart)return months;const startM=parseInt(seasonStart);const endM=seasonEnd?parseInt(seasonEnd):startM;return startM<=endM?months.filter(x=>{const mn=getMonthNum(x);return mn>=startM&&mn<=endM}):months.filter(x=>{const mn=getMonthNum(x);return mn>=startM||mn<=endM})}
 function getFilteredMonths(data){let m=applyMonthWindow(getMonthsByRange('fTimeRange'),'fSeason','fSeasonEnd');const fNew=document.getElementById('fNewProduct')?.value;const fSuccess=document.getElementById('fSuccessNew')?.value;if((fNew||fSuccess)&&data&&data.length>0){const monthsWithSales=m.filter(month=>data.some(d=>safeNum(d.sales[month])>0));if(monthsWithSales.length>0)m=monthsWithSales}return m}
 function getBrandMonths(){return getMonthsByRange('brandFilterTimeRange')}
-function getTrendMonths(){let m=getMonthsByRange('trendFilterTimeRange');const season=document.getElementById('trendFilterSeason')?.value;const seasons={spring:[3,4,5],summer:[6,7,8],autumn:[9,10,11],winter:[12,1,2]};if(season&&seasons[season])m=m.filter(x=>seasons[season].includes(getMonthNum(x)));return m}
+function getTrendMonths(){let m=TREND_MONTHS.length?[...TREND_MONTHS]:getMonthsByRange('trendFilterTimeRange');const range=document.getElementById('trendFilterTimeRange')?.value||'all';if(/^20\d{2}$/.test(range))m=m.filter(x=>x.startsWith(range));else if(range==='last12')m=m.slice(-12);const season=document.getElementById('trendFilterSeason')?.value;const seasons={spring:[3,4,5],summer:[6,7,8],autumn:[9,10,11],winter:[12,1,2]};if(season&&seasons[season])m=m.filter(x=>seasons[season].includes(getMonthNum(x)));return m}
 function getDeepMonths(){return applyMonthWindow(getMonthsByRange('deepFilterTimeRange'),'deepFilterSeason','deepFilterSeasonEnd')}
 function getCompetitionMonths(){return getMonthsByRange('compFilterTimeRange')}
 function applyGlobalBrandFilter(){applyFilters()}
@@ -1965,6 +2036,7 @@ function updateTrendExplorer(data,months){
   const tableEl=document.getElementById('trendExplorerTable');
   const insightsEl=document.getElementById('trendExplorerInsights');
   if(!canvas||!tableEl||!insightsEl)return;
+  data=filterTrendExplorerData(data);
   const dimension=document.getElementById('trendExplorerDimension')?.value||'品牌';
   const metric=document.getElementById('trendExplorerMetric')?.value||'sales';
   const topN=parseInt(document.getElementById('trendExplorerTopN')?.value||'6');
@@ -2106,7 +2178,6 @@ function updateTrendCharts(data,months){
   makeTrend('风格','chartStyleTrend');
   makeTrend('袖子类型','chartSleeveTrend');
   makeTrend('领型','chartNeckTrend');
-  makeTrend('图案类型','chartPatternTrend');
   makeTrend('价格梯度','chartPriceTrend');
 
   // Generate filter bars for all trend charts
@@ -2115,7 +2186,6 @@ function updateTrendCharts(data,months){
     {key:'风格',chartId:'chartStyleTrend',barId:'trendBar-style'},
     {key:'袖子类型',chartId:'chartSleeveTrend',barId:'trendBar-sleeve'},
     {key:'领型',chartId:'chartNeckTrend',barId:'trendBar-neck'},
-    {key:'图案类型',chartId:'chartPatternTrend',barId:'trendBar-pattern'},
     {key:'价格梯度',chartId:'chartPriceTrend',barId:'trendBar-price'}
   ];
   trendConfigs.forEach(cfg=>{
@@ -2774,7 +2844,7 @@ let refreshTimer=null;
     prepareMainData(DEFAULT_ALL_DATA,DEFAULT_MONTHS);
     rebuildFilterOptions();applyFilters();
   }
-  loadBundledV5Data();
+  loadBundledV7Data();
   try{
     const saved=localStorage.getItem('NC_DATA');
     if(saved){NC_DATA=JSON.parse(saved)}else if(typeof DEFAULT_NC_DATA!=='undefined'){NC_DATA=DEFAULT_NC_DATA}
