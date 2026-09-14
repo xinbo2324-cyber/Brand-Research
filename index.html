@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>品牌市场调研分析 - AI增强版</title>
+<title>品牌市场调研看板</title>
 <script src="chart.umd.min.js"></script>
 <script src="chartjs-plugin-datalabels.min.js"></script>
 <script src="xlsx.full.min.js"></script>
@@ -446,6 +446,21 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 .trend-explorer-filter-summary{margin-top:10px;color:var(--text-muted);font-size:11px;min-height:16px}.trend-explorer-filter-summary.active{color:#4968d8;font-weight:600}
 .research-link-bar{background:linear-gradient(90deg,#f8faff,#fff);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border-light)}
 .research-link-title{font-size:12px;color:var(--text-secondary);font-weight:700;display:flex;align-items:center;gap:6px}.research-link-count{font-size:11px;color:var(--text-muted);margin-right:auto}.research-link-panel{display:none;background:var(--card);padding:0 20px 16px;border-bottom:1px solid var(--border-light)}.research-link-panel.show{display:block}.research-link-table-wrap{max-height:360px;overflow:auto;border:1px solid var(--border-light);border-radius:8px}.research-link-table{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}.research-link-table th{position:sticky;top:0;background:#f7f9ff;color:var(--text-secondary);text-align:left;padding:9px 10px;white-space:nowrap}.research-link-table td{padding:9px 10px;border-top:1px solid var(--border-light);vertical-align:top}.research-link-table .title{max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.research-link-table a{color:var(--primary);font-weight:600;text-decoration:none}.research-link-table a:hover{text-decoration:underline}
+
+/* ========== Official BSR-style navigation refresh ========== */
+.header{background:linear-gradient(112deg,#173f9b 0%,#2563eb 54%,#0f9f9a 116%);color:#fff;padding:14px 26px;border:0;box-shadow:0 7px 22px rgba(30,64,175,.2)}
+.header h1{display:flex;align-items:center;gap:9px;font-size:21px;color:#fff}.header p{color:rgba(255,255,255,.8)}
+.brand-mark{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.17);border:1px solid rgba(255,255,255,.28);font-size:11px;letter-spacing:0}
+.header .beta-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.26);color:#fff}
+.header .btn-import,.header .ai-toggle-btn{height:36px;padding:0 13px;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.34);border-radius:10px;background:rgba(255,255,255,.1);color:#fff;box-shadow:none}.header .btn-import:hover,.header .ai-toggle-btn:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.55)}
+.main-wrapper{height:calc(100vh - 72px);min-height:620px;background:#f3f7ff}.content-area{background:#fff;border-radius:18px 0 0 0}.side-nav{width:232px;flex:0 0 232px;padding:16px 10px;background:#f3f7ff;border-right:1px solid #dbe7f8;overflow-y:auto}.side-nav-kicker{margin:0 10px 10px;color:#7b879d;font-size:10px;font-weight:700;letter-spacing:.12em}.side-nav-group{margin-bottom:16px}.side-nav-group-title{margin:0 10px 6px;color:#7b879d;font-size:11px}.side-nav-btn{position:relative;width:100%;min-height:38px;padding:8px 11px;display:flex;align-items:center;gap:9px;border:0;border-radius:9px;background:transparent;color:#35415a;cursor:pointer;text-align:left;font-size:13px;font-weight:600}.side-nav-btn:hover{background:#f8faff;color:#3456cf}.side-nav-btn.active{background:#eaf2ff;color:#2563eb}.side-nav-btn.active::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#2563eb}.side-nav-icon{width:24px;height:24px;display:grid;place-items:center;border-radius:7px;background:rgba(73,104,216,.08);font-size:13px}.side-nav-foot{margin:24px 10px 0;padding-top:12px;border-top:1px solid #dbe3f0;color:#7b879d;font-size:11px;line-height:1.65}
+.workspace-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;max-width:1480px;margin:0 auto;padding:20px 26px 12px}.workspace-eyebrow{color:#2563eb;font-size:10px;font-weight:700;letter-spacing:.15em}.workspace-head h2{margin:4px 0 4px;font-size:23px;line-height:1.25;color:#172033}.workspace-head p{margin:0;color:#71809a;font-size:12px}.workspace-actions{display:flex;gap:8px;flex:0 0 auto}.workspace-actions .btn{padding:7px 11px}
+.research-link-bar{max-width:1480px;margin:0 auto 10px;padding:12px 14px;border:1px solid #cfe0fb;border-radius:13px;background:linear-gradient(100deg,#eaf2ff,#effbfa);box-shadow:none}.research-link-title{color:#172f55}.research-link-panel{max-width:1480px;margin:0 auto 12px;padding:0 14px 14px;border:1px solid #dbe7f8;border-radius:13px;background:#fff}.global-brand-bar{max-width:1480px;margin:0 auto 12px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #dfe7f4;border-radius:13px;background:#fbfcff}.global-brand-heading{font-size:12px;color:#172033;font-weight:700;display:flex;align-items:center;gap:7px}.global-brand-heading::before{content:'';width:4px;height:15px;border-radius:3px;background:#2563eb}.global-brand-note{font-size:11px;color:#7b879d}.global-brand-bar select{padding:7px 11px!important;border-color:#dce4f0!important;border-radius:8px!important;background:#fff!important}
+.tab-bar{display:none}.tab-page{max-width:1480px;padding:10px 26px 32px}.stats-bar{grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;margin-bottom:12px}.stat-card{min-height:94px;padding:13px 14px;border-top:3px solid #2563eb;border-left:1px solid #e1e8f3;border-radius:12px;box-shadow:0 7px 18px rgba(30,64,175,.05)}.stat-card .value{font-size:23px;color:#172f55}.stat-card.green{border-left:1px solid #e1e8f3;border-top-color:#0f9f76}.stat-card.pink{border-left:1px solid #e1e8f3;border-top-color:#d23a64}.stat-card.blue{border-left:1px solid #e1e8f3;border-top-color:#3675d3}.stat-card.yellow{border-left:1px solid #e1e8f3;border-top-color:#c47f16}.stat-card.green .value{color:#0f9f76}.stat-card.pink .value{color:#d23a64}.stat-card.blue .value{color:#3675d3}.stat-card.yellow .value{color:#c47f16}
+.filter-panel{padding:15px 16px;margin-bottom:12px;border-radius:13px;background:#fbfcff;box-shadow:none}.filter-panel h3{margin-bottom:12px}.filter-section{margin-bottom:10px;padding-bottom:10px}.filter-group select,.filter-group input{min-height:34px;padding:7px 10px}.charts-grid{gap:12px;margin-bottom:12px}.chart-card,.table-card{padding:16px;border-radius:14px;box-shadow:0 10px 26px rgba(30,64,175,.055)}.chart-card h3{margin-bottom:9px}.table-card{margin-bottom:12px}.chart-wrap{height:290px}.chart-wrap.tall{height:360px}
+@media(max-width:1120px){.stats-bar{grid-template-columns:repeat(3,minmax(140px,1fr))}.header-actions{gap:6px}.header .btn-import{padding:0 10px}}
+@media(max-width:860px){.main-wrapper{height:auto;min-height:0}.side-nav{display:none}.content-area{border-radius:0;overflow:visible}.tab-bar{display:flex;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e8ebf2;padding:0 12px;overflow-x:auto}.tab-btn{padding:12px 14px}.workspace-head{padding:18px 14px 10px}.research-link-bar,.research-link-panel,.global-brand-bar{margin-left:14px;margin-right:14px}.tab-page{padding:14px 14px 28px}.stats-bar{grid-template-columns:repeat(2,minmax(140px,1fr))}}
+@media(max-width:600px){.header{padding:13px 14px}.header h1{font-size:17px}.brand-mark{width:24px;height:24px}.header-actions{gap:5px}.header .btn-import{width:34px;padding:0;justify-content:center;font-size:0}.header .btn-import:first-letter{font-size:15px}.header .ai-toggle-btn{width:34px;padding:0;justify-content:center;font-size:0}.header .ai-toggle-btn:first-letter{font-size:15px}.workspace-head{display:block}.workspace-actions{margin-top:10px}.research-link-count{width:100%;order:3}.stats-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card{min-height:82px}.stat-card .value{font-size:20px}.global-brand-bar{align-items:flex-start}.global-brand-note{width:100%}}
 </style>
 </head>
 <body>
@@ -453,7 +468,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 <div class="header">
   <div class="header-top">
     <div>
-      <h1>品牌市场调研分析仪表盘 <span class="beta-badge">父体去重 · 极速版</span></h1>
+      <h1><span class="brand-mark">BR</span>品牌市场调研看板 <span class="beta-badge">父体去重 · 极速版</span></h1>
       <p id="headerDesc">正在加载汇总数据…</p>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
@@ -554,10 +569,36 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 
 <!-- Main Layout Wrapper -->
 <div class="main-wrapper">
+<!-- BSR-style Side Navigation -->
+<aside class="side-nav" aria-label="分析目录">
+  <div class="side-nav-kicker">ANALYSIS</div>
+  <div class="side-nav-group">
+    <div class="side-nav-group-title">市场研究</div>
+    <button class="side-nav-btn active" data-tab="overview" data-title="市场总览"><span class="side-nav-icon">▦</span>市场总览</button>
+    <button class="side-nav-btn" data-tab="brand" data-title="品牌对比"><span class="side-nav-icon">▥</span>品牌对比</button>
+    <button class="side-nav-btn" data-tab="trend" data-title="趋势探索器"><span class="side-nav-icon">⌁</span>趋势探索器</button>
+    <button class="side-nav-btn" data-tab="newcompare" data-title="新品追踪"><span class="side-nav-icon">✦</span>新品追踪</button>
+  </div>
+  <div class="side-nav-group">
+    <div class="side-nav-group-title">深度洞察</div>
+    <button class="side-nav-btn" data-tab="deep" data-title="深度分析"><span class="side-nav-icon">◌</span>深度分析</button>
+    <button class="side-nav-btn" data-tab="competition" data-title="竞争分析"><span class="side-nav-icon">◉</span>竞争分析</button>
+    <button class="side-nav-btn" data-tab="aiinsight" data-title="AI 洞察"><span class="side-nav-icon">✧</span>AI 洞察</button>
+  </div>
+  <div class="side-nav-group">
+    <div class="side-nav-group-title">系统</div>
+    <button class="side-nav-btn" data-tab="help" data-title="使用说明与更新日志"><span class="side-nav-icon">?</span>使用说明</button>
+  </div>
+  <div class="side-nav-foot">数据看板 · Brand Research<br>父体按月份去重</div>
+</aside>
 <!-- Content Area -->
 <div class="content-area" id="contentArea">
 
 <!-- Global Brand Filter -->
+<div class="workspace-head">
+  <div><div class="workspace-eyebrow" id="workspaceEyebrow">MARKET OVERVIEW</div><h2 id="workspaceTitle">市场总览</h2><p id="workspaceDesc">当前快照与趋势数据已就绪；各页面筛选互不影响。</p></div>
+  <div class="workspace-actions"><button class="btn btn-reset" onclick="resetFilters()">清除筛选</button><button class="btn btn-primary" onclick="document.querySelector('.side-nav-btn[data-tab=\"trend\"]').click()">查看趋势探索</button></div>
+</div>
 <div class="research-link-bar">
   <span class="research-link-title">🔗 调研月份链接</span>
   <select id="researchMonthFilter" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;min-width:140px;background:var(--bg);outline:none;cursor:pointer" onchange="renderResearchLinks(true)"><option value="">选择调研月份</option></select>
@@ -568,15 +609,12 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 </div>
 <div class="research-link-panel" id="researchLinkPanel"><div class="research-link-table-wrap" id="researchLinkTable"><div class="trend-empty">请选择调研月份。</div></div></div>
 
-<div style="background:var(--card);padding:10px 20px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--border-light)">
-  <span style="font-size:12px;color:var(--text-secondary);font-weight:600;display:flex;align-items:center;gap:6px">
-    <span style="width:4px;height:14px;background:linear-gradient(180deg,var(--primary),var(--accent));border-radius:2px;display:inline-block"></span>
-    全局品牌筛选
-  </span>
-  <select id="globalBrandFilter" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;min-width:160px;background:var(--bg);outline:none;cursor:pointer;transition:var(--transition)" onchange="applyGlobalBrandFilter()">
+<div class="global-brand-bar">
+  <span class="global-brand-heading">全局品牌筛选</span>
+  <select id="globalBrandFilter" onchange="applyGlobalBrandFilter()">
     <option value="">全部品牌</option>
   </select>
-  <span style="font-size:11px;color:var(--text-muted)">选择品牌后，所有页签数据将自动筛选为该品牌</span>
+  <span class="global-brand-note">选择品牌后，所有页面数据将自动筛选为该品牌</span>
 </div>
 
 <!-- Tab Bar -->
@@ -875,6 +913,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
+        <div class="update-log-item"><div class="update-log-date">2026-09-14<br>UI 升级</div><div><strong>BSR 风格正式界面（升级）</strong>正式页更新为蓝绿工具栏、左侧分组导航、紧凑筛选栏与清晰的主工作区；保留原有数据、图表、链接明细和独立筛选逻辑。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-14<br>链接明细</div><div><strong>顶部调研月份链接（新增）</strong>可在页面顶部选择4–8月调研快照，查看同月父ASIN去重后的商品链接明细，并支持复制全部链接或导出CSV；该功能不影响其他分析筛选。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-14<br>性能优化</div><div><strong>加载与筛选提速</strong>默认数据改用约1.1MB压缩数据包，避免浏览器现场解析9.6MB Excel；筛选时只计算和重绘当前页签，不再刷新全部页面图表。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-14<br>正式版</div><div><strong>汇总快照与父体去重（新增）</strong>导入4–8月汇总数据；按“月份 + 父ASIN”去重，同月保留抓取时间最新记录，不同月份允许相同父体出现。新增是否衬衫、版型、弹力等级、克重等级、闭合方式和商品状态，暂不加入卖家国家、卖家类型和图案类型；晚于8月快照的2026-09销量不进入统计。</div></div>
@@ -1422,9 +1461,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('page-'+btn.dataset.tab).classList.add('active');
+    document.querySelectorAll('.side-nav-btn').forEach(nav=>nav.classList.toggle('active',nav.dataset.tab===btn.dataset.tab));
+    const nav=document.querySelector(`.side-nav-btn[data-tab="${btn.dataset.tab}"]`);
+    const title=nav?.dataset.title||btn.textContent.trim();
+    const titleEl=document.getElementById('workspaceTitle'),eyebrowEl=document.getElementById('workspaceEyebrow'),descEl=document.getElementById('workspaceDesc');
+    if(titleEl)titleEl.textContent=title;if(eyebrowEl)eyebrowEl.textContent=btn.dataset.tab==='overview'?'MARKET OVERVIEW':'RESEARCH WORKSPACE';if(descEl)descEl.textContent=btn.dataset.tab==='trend'?'可同时按品牌、风格、面料等条件查看多维趋势。':'当前页面筛选独立生效，不影响其他分析页面。';
+    document.getElementById('contentArea')?.scrollTo({top:0,behavior:'smooth'});
     setTimeout(()=>{applyFilters();if(btn.dataset.tab==='newcompare'){if(ncSourceMode==='current'&&ALL_DATA.length>0)loadNcFromCurrent();else if(NC_DATA.length>0)applyNewCompareFilters()}},50);
   });
 });
+document.querySelectorAll('.side-nav-btn').forEach(nav=>nav.addEventListener('click',()=>document.querySelector(`.tab-btn[data-tab="${nav.dataset.tab}"]`)?.click()));
 
 // ========== IMPORT ==========
 const DEFAULT_NETWORK_PATH='\\\\192.168.16.75\\大想组-共享文件夹\\市场调研';
