@@ -451,8 +451,8 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 <div class="header">
   <div class="header-top">
     <div>
-      <h1>品牌市场调研分析仪表盘 <span class="beta-badge">父体去重 · 快照趋势版</span></h1>
-      <p id="headerDesc">汇总数据正式版 · 同月父ASIN去重 · 多维度趋势分析</p>
+      <h1>品牌市场调研分析仪表盘 <span class="beta-badge">父体去重 · 极速版</span></h1>
+      <p id="headerDesc">正在加载汇总数据…</p>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
       <div style="display:flex;gap:6px">
@@ -863,6 +863,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
+        <div class="update-log-item"><div class="update-log-date">2026-09-14<br>性能优化</div><div><strong>加载与筛选提速</strong>默认数据改用约1.1MB压缩数据包，避免浏览器现场解析9.6MB Excel；筛选时只计算和重绘当前页签，不再刷新全部页面图表。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-14<br>正式版</div><div><strong>汇总快照与父体去重（新增）</strong>导入4–8月汇总数据；按“月份 + 父ASIN”去重，同月保留抓取时间最新记录，不同月份允许相同父体出现。新增是否衬衫、版型、弹力等级、克重等级、闭合方式和商品状态，暂不加入卖家国家、卖家类型和图案类型；晚于8月快照的2026-09销量不进入统计。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-08-19<br>测试版</div><div><strong>趋势探索器组合筛选（新增）</strong>可同时选择品牌、风格、面料、品类、袖子类型等条件，组合筛选只作用于趋势探索器的趋势图、透视表和指标结果。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-08-17<br>测试版</div><div><strong>维度扩展与新数据（新增）</strong>趋势探索器新增袖子、袖边、领型、图案、印花、颜色、评分梯度等分析维度；默认加载 1,227 条新数据，并将源字段“袖长”映射为“袖子类型”。</div></div>
@@ -1557,6 +1558,14 @@ async function loadBundledV7Data(){
     prepareSummaryRows(rows,'品牌调研数据汇总表格.xlsx');
   }catch(error){console.warn('默认数据加载失败',error)}
 }
+async function loadBundledV8Data(){
+  try{
+    const response=await fetch('brand-research-summary-v8.json.gz',{cache:'no-store'});if(!response.ok)throw new Error('优化数据文件加载失败');
+    const payload=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
+    prepareMainData(payload.latest,payload.months);TREND_MONTHS=payload.trendMonths;TREND_DATA=payload.trend.map(d=>{const item=normalizeMainRecord(d);item._isNew=isNewProduct(item);item._isSuccessNew=item._isNew&&isSuccessNewProduct(item);return item});
+    currentDataVersion=payload.version;window.SUMMARY_QA=payload.qa;rebuildFilterOptions();applyFilters();document.getElementById('headerDesc').textContent=`${payload.sourceName} · 最新快照${ALL_DATA.length}个父体 · 趋势${TREND_MONTHS.length}个月 · 极速版`;window.DASHBOARD_PERF.readyMs=performance.now();document.documentElement.dataset.readyMs=window.DASHBOARD_PERF.readyMs.toFixed(1);
+  }catch(error){console.warn('优化数据加载失败，改用Excel数据',error);loadBundledV7Data()}
+}
 
 // ========== FILTERS ==========
 const TREND_EXPLORER_FILTER_DEFS=[
@@ -1630,7 +1639,15 @@ function resetFilters(){document.querySelectorAll('#page-overview .filter-panel 
 function resetBrandFilters(){['fBrandA','fBrandB','fBrandC','fBrandD','fBrandE','fBrandF','fBrandSeasonCat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});document.getElementById('brandFilterTimeRange').value='all';applyBrandCompare()}
 function resetTrendFilters(){document.querySelectorAll('#page-trend .filter-panel select').forEach(s=>s.value='');applyFilters()}
 function resetDeepFilters(){document.querySelectorAll('#page-deep .filter-panel select').forEach(s=>s.value='');applyFilters()}
-function applyFilters(){const overviewData=filterData(),overviewMonths=getFilteredMonths(overviewData);const brandData=filterBrandData(),brandMonths=getBrandMonths();const trendData=filterTrendData(),trendMonths=getTrendMonths(trendData);const deepData=filterDeepData(),deepMonths=getDeepMonths(deepData);const competitionData=filterCompetitionData(),competitionMonths=getCompetitionMonths(competitionData);updateStats(overviewData,overviewMonths);updateSalesTrend(overviewData,overviewMonths);updateMonthlyYearCompare(overviewData,overviewMonths);updateCategoryChart(overviewData,overviewMonths);updateSeasonChart(overviewData,overviewMonths);updateTable(overviewData);updateBrandCompare(brandData,brandMonths);updateBrandSales(brandData,brandMonths);updateBrandPrice(brandData);updateBrandRating(brandData);updateBrandCategory(brandData);updateBrandSeason(brandData,brandMonths);updateBrandSeasonCategory(brandData,brandMonths);updateBrandSeasonTrend(brandData,brandMonths);updateTrendCharts(trendData,trendMonths);updateTrendExplorer(trendData,trendMonths);updateDeepCharts(deepData,deepMonths);updateCompetitionCharts(competitionData,competitionMonths)}
+function applyFilters(){
+  const started=performance.now(),done=()=>{window.DASHBOARD_PERF.lastFilterMs=performance.now()-started;document.documentElement.dataset.filterMs=window.DASHBOARD_PERF.lastFilterMs.toFixed(1)};
+  const active=document.querySelector('.tab-btn.active')?.dataset.tab||'overview';
+  if(active==='overview'){const data=filterData(),months=getFilteredMonths(data);updateStats(data,months);updateSalesTrend(data,months);updateMonthlyYearCompare(data,months);updateCategoryChart(data,months);updateSeasonChart(data,months);updateTable(data);done();return}
+  if(active==='brand'){const data=filterBrandData(),months=getBrandMonths();updateBrandCompare(data,months);updateBrandSales(data,months);updateBrandPrice(data);updateBrandRating(data);updateBrandCategory(data);updateBrandSeason(data,months);updateBrandSeasonCategory(data,months);updateBrandSeasonTrend(data,months);done();return}
+  if(active==='trend'){const data=filterTrendData(),months=getTrendMonths(data);updateTrendCharts(data,months);updateTrendExplorer(data,months);done();return}
+  if(active==='deep'){const data=filterDeepData(),months=getDeepMonths(data);updateDeepCharts(data,months);done();return}
+  if(active==='competition'){const data=filterCompetitionData(),months=getCompetitionMonths(data);updateCompetitionCharts(data,months);done()}
+}
 
 // ========== OVERVIEW ==========
 function updateStats(data,months){document.getElementById('statTotal').textContent=data.length;document.getElementById('statBrands').textContent=new Set(data.map(d=>(d['品牌']||'').trim())).size;document.getElementById('statCats').textContent=new Set(data.map(d=>(d['品类']||'').trim())).size;const p=data.map(d=>safeNum(d['Buybox价格'])).filter(v=>v>0);document.getElementById('statPrice').textContent=p.length?'$'+avg(p).toFixed(2):'-';const r=data.map(d=>safeNum(d['评分'])).filter(v=>v>0);document.getElementById('statRating').textContent=r.length?avg(r).toFixed(2):'-';const fmtSales=v=>v>=1e4?(v/1e4).toFixed(1)+'w':v.toLocaleString();const latestMonth=months[months.length-1];const latestSales=data.reduce((s,d)=>s+safeNum(d.sales[latestMonth]),0);document.getElementById('statLatestSales').textContent=fmtSales(latestSales);document.getElementById('statLatestMonth').textContent=latestMonth?latestMonth.slice(0,4)+'-'+latestMonth.slice(4):'-';const last12=months.slice(-12);const yearSales=data.reduce((s,d)=>s+last12.reduce((ss,m)=>ss+safeNum(d.sales[m]),0),0);document.getElementById('statYearSales').textContent=fmtSales(yearSales);document.getElementById('statNewCount').textContent=data.filter(d=>d._isNew).length;document.getElementById('statSuccessNew').textContent=data.filter(d=>d._isSuccessNew).length;const newCount=data.filter(d=>d._isNew).length;const successCount=data.filter(d=>d._isSuccessNew).length;document.getElementById('statSuccessRate').textContent=newCount>0?Math.round(successCount/newCount*100)+'%':'-'}
@@ -2826,25 +2843,8 @@ let refreshTimer=null;
 
 // ========== INIT ==========
 (function(){
-  // Try to load cached data from GitHub updates first
-  try{
-    const cached=localStorage.getItem('cachedData_dimensions_v5');
-    if(cached){
-      const parsed=JSON.parse(cached);
-      if(parsed.data&&parsed.months&&parsed.data.length>0){
-        prepareMainData(parsed.data,parsed.months);
-        if(parsed.version)currentDataVersion=parsed.version;
-        rebuildFilterOptions();applyFilters();
-        if(parsed.version==='bundled-v5')document.getElementById('headerDesc').textContent='品牌调研数据.xlsx · '+ALL_DATA.length+'条记录 · '+MONTHS.length+'个月度';
-      }
-    }
-  }catch(e){}
-  // Fall back to default data if no cache
-  if(ALL_DATA.length===0&&typeof DEFAULT_ALL_DATA!=='undefined'){
-    prepareMainData(DEFAULT_ALL_DATA,DEFAULT_MONTHS);
-    rebuildFilterOptions();applyFilters();
-  }
-  loadBundledV7Data();
+  window.DASHBOARD_PERF={started:performance.now(),readyMs:0,lastFilterMs:0};
+  loadBundledV8Data();
   try{
     const saved=localStorage.getItem('NC_DATA');
     if(saved){NC_DATA=JSON.parse(saved)}else if(typeof DEFAULT_NC_DATA!=='undefined'){NC_DATA=DEFAULT_NC_DATA}
