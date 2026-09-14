@@ -444,6 +444,8 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 .trend-explorer-filter-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;color:var(--text);font-size:12px}
 .trend-explorer-filter-head strong{font-size:13px}.trend-explorer-filter-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}.trend-explorer-filter-row .filter-group{flex:1 1 150px;min-width:150px}.trend-explorer-filter-row .filter-group select{width:100%}
 .trend-explorer-filter-summary{margin-top:10px;color:var(--text-muted);font-size:11px;min-height:16px}.trend-explorer-filter-summary.active{color:#4968d8;font-weight:600}
+.research-link-bar{background:linear-gradient(90deg,#f8faff,#fff);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border-light)}
+.research-link-title{font-size:12px;color:var(--text-secondary);font-weight:700;display:flex;align-items:center;gap:6px}.research-link-count{font-size:11px;color:var(--text-muted);margin-right:auto}.research-link-panel{display:none;background:var(--card);padding:0 20px 16px;border-bottom:1px solid var(--border-light)}.research-link-panel.show{display:block}.research-link-table-wrap{max-height:360px;overflow:auto;border:1px solid var(--border-light);border-radius:8px}.research-link-table{width:100%;border-collapse:collapse;font-size:12px;min-width:800px}.research-link-table th{position:sticky;top:0;background:#f7f9ff;color:var(--text-secondary);text-align:left;padding:9px 10px;white-space:nowrap}.research-link-table td{padding:9px 10px;border-top:1px solid var(--border-light);vertical-align:top}.research-link-table .title{max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.research-link-table a{color:var(--primary);font-weight:600;text-decoration:none}.research-link-table a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -556,6 +558,16 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
 <div class="content-area" id="contentArea">
 
 <!-- Global Brand Filter -->
+<div class="research-link-bar">
+  <span class="research-link-title">🔗 调研月份链接</span>
+  <select id="researchMonthFilter" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;min-width:140px;background:var(--bg);outline:none;cursor:pointer" onchange="renderResearchLinks(true)"><option value="">选择调研月份</option></select>
+  <span class="research-link-count" id="researchLinkCount">加载后可按月份查看全部商品链接</span>
+  <button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="toggleResearchLinks()">查看链接明细</button>
+  <button class="btn btn-reset" style="padding:6px 12px;font-size:12px" onclick="copyResearchLinks()">复制链接</button>
+  <button class="btn btn-reset" style="padding:6px 12px;font-size:12px" onclick="exportResearchLinks()">导出CSV</button>
+</div>
+<div class="research-link-panel" id="researchLinkPanel"><div class="research-link-table-wrap" id="researchLinkTable"><div class="trend-empty">请选择调研月份。</div></div></div>
+
 <div style="background:var(--card);padding:10px 20px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--border-light)">
   <span style="font-size:12px;color:var(--text-secondary);font-weight:600;display:flex;align-items:center;gap:6px">
     <span style="width:4px;height:14px;background:linear-gradient(180deg,var(--primary),var(--accent));border-radius:2px;display:inline-block"></span>
@@ -863,6 +875,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
+        <div class="update-log-item"><div class="update-log-date">2026-09-14<br>链接明细</div><div><strong>顶部调研月份链接（新增）</strong>可在页面顶部选择4–8月调研快照，查看同月父ASIN去重后的商品链接明细，并支持复制全部链接或导出CSV；该功能不影响其他分析筛选。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-14<br>性能优化</div><div><strong>加载与筛选提速</strong>默认数据改用约1.1MB压缩数据包，避免浏览器现场解析9.6MB Excel；筛选时只计算和重绘当前页签，不再刷新全部页面图表。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-14<br>正式版</div><div><strong>汇总快照与父体去重（新增）</strong>导入4–8月汇总数据；按“月份 + 父ASIN”去重，同月保留抓取时间最新记录，不同月份允许相同父体出现。新增是否衬衫、版型、弹力等级、克重等级、闭合方式和商品状态，暂不加入卖家国家、卖家类型和图案类型；晚于8月快照的2026-09销量不进入统计。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-08-19<br>测试版</div><div><strong>趋势探索器组合筛选（新增）</strong>可同时选择品牌、风格、面料、品类、袖子类型等条件，组合筛选只作用于趋势探索器的趋势图、透视表和指标结果。</div></div>
@@ -1549,7 +1562,7 @@ function prepareSummaryRows(rows,sourceName){
   const latestData=deduped.items.filter(x=>x.month===latest).map(x=>mapSummaryRow(x.row,allMonths,false));
   TREND_MONTHS=snapshotMonths;TREND_DATA=deduped.items.map(x=>mapSummaryRow(x.row,snapshotMonths,true));
   prepareMainData(latestData,allMonths);currentDataVersion='summary-v7';window.SUMMARY_QA={sourceRows:rows.length,dedupedRows:deduped.items.length,latestParents:latestData.length,snapshotMonths,sameTimeConflicts:deduped.sameTimeConflicts};
-  rebuildFilterOptions();applyFilters();document.getElementById('headerDesc').textContent=`${sourceName} · 最新快照${latestData.length}个父体 · 趋势${snapshotMonths.length}个月 · 同月父体已去重`;
+  rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();applyFilters();document.getElementById('headerDesc').textContent=`${sourceName} · 最新快照${latestData.length}个父体 · 趋势${snapshotMonths.length}个月 · 同月父体已去重`;
 }
 async function loadBundledV7Data(){
   try{
@@ -1563,7 +1576,7 @@ async function loadBundledV8Data(){
     const response=await fetch('brand-research-summary-v8.json.gz',{cache:'no-store'});if(!response.ok)throw new Error('优化数据文件加载失败');
     const payload=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
     prepareMainData(payload.latest,payload.months);TREND_MONTHS=payload.trendMonths;TREND_DATA=payload.trend.map(d=>{const item=normalizeMainRecord(d);item._isNew=isNewProduct(item);item._isSuccessNew=item._isNew&&isSuccessNewProduct(item);return item});
-    currentDataVersion=payload.version;window.SUMMARY_QA=payload.qa;rebuildFilterOptions();applyFilters();document.getElementById('headerDesc').textContent=`${payload.sourceName} · 最新快照${ALL_DATA.length}个父体 · 趋势${TREND_MONTHS.length}个月 · 极速版`;window.DASHBOARD_PERF.readyMs=performance.now();document.documentElement.dataset.readyMs=window.DASHBOARD_PERF.readyMs.toFixed(1);
+    currentDataVersion=payload.version;window.SUMMARY_QA=payload.qa;rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();applyFilters();document.getElementById('headerDesc').textContent=`${payload.sourceName} · 最新快照${ALL_DATA.length}个父体 · 趋势${TREND_MONTHS.length}个月 · 极速版`;window.DASHBOARD_PERF.readyMs=performance.now();document.documentElement.dataset.readyMs=window.DASHBOARD_PERF.readyMs.toFixed(1);
   }catch(error){console.warn('优化数据加载失败，改用Excel数据',error);loadBundledV7Data()}
 }
 
@@ -1594,6 +1607,31 @@ function filterTrendExplorerData(source){
   return data;
 }
 function resetTrendExplorerFilters(){TREND_EXPLORER_FILTER_DEFS.forEach(def=>{const el=document.getElementById(def.id);if(el)el.value=''});applyFilters()}
+
+function researchMonthFor(item){return item._researchMonth||item._snapshotMonth||Object.keys(item.sales||{}).find(month=>TREND_MONTHS.includes(month))||''}
+function researchMonthLabel(month){return month?month.slice(0,4)+'年'+Number(month.slice(4))+'月':''}
+function getResearchLinkRows(){const month=document.getElementById('researchMonthFilter')?.value||'';return month?TREND_DATA.filter(item=>researchMonthFor(item)===month):[]}
+function rebuildResearchMonthFilter(){
+  const select=document.getElementById('researchMonthFilter');if(!select)return;const previous=select.value,counts={};TREND_DATA.forEach(item=>{const month=researchMonthFor(item);if(month)counts[month]=(counts[month]||0)+1});
+  const months=TREND_MONTHS.filter(month=>counts[month]);select.innerHTML='<option value="">选择调研月份</option>'+months.map(month=>`<option value="${month}">${researchMonthLabel(month)}（${counts[month]}个父体）</option>`).join('');select.value=months.includes(previous)?previous:(months.at(-1)||'');
+}
+function safeResearchUrl(value){try{const url=new URL(String(value||'').trim());return /^https?:$/.test(url.protocol)?url.href:''}catch(error){return''}}
+function researchUrlFor(item){const url=safeResearchUrl(item['链接']);if(url)return url;const asin=String(item['商品ASIN']||item['竞品ASIN']||'').trim().toUpperCase();return /^[A-Z0-9]{10}$/.test(asin)?'https://www.amazon.com/dp/'+asin:''}
+let researchLinkPage=1;const RESEARCH_LINK_PAGE_SIZE=100;
+function renderResearchLinks(resetPage=false){
+  if(resetPage)researchLinkPage=1;
+  const table=document.getElementById('researchLinkTable'),count=document.getElementById('researchLinkCount');if(!table||!count)return;const rows=getResearchLinkRows(),month=document.getElementById('researchMonthFilter')?.value||'',withLinks=rows.filter(researchUrlFor);
+  count.textContent=month?`${researchMonthLabel(month)}：${rows.length}个去重父体，${withLinks.length}条可用链接`:'请选择调研月份';
+  if(!month){table.innerHTML='<div class="trend-empty">请选择调研月份。</div>';return}if(!rows.length){table.innerHTML='<div class="trend-empty">该月份没有可用调研记录。</div>';return}
+  const pages=Math.ceil(rows.length/RESEARCH_LINK_PAGE_SIZE);researchLinkPage=Math.min(researchLinkPage,pages);const start=(researchLinkPage-1)*RESEARCH_LINK_PAGE_SIZE,visible=rows.slice(start,start+RESEARCH_LINK_PAGE_SIZE);
+  table.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:9px 2px;font-size:11px;color:var(--text-muted)"><span>显示 ${start+1}–${start+visible.length} / ${rows.length} 条</span><span style="margin-left:auto">第 ${researchLinkPage} / ${pages} 页</span><button class="btn btn-reset" style="padding:4px 8px;font-size:11px" onclick="changeResearchLinkPage(-1)" ${researchLinkPage===1?'disabled':''}>上一页</button><button class="btn btn-reset" style="padding:4px 8px;font-size:11px" onclick="changeResearchLinkPage(1)" ${researchLinkPage===pages?'disabled':''}>下一页</button></div><table class="research-link-table"><thead><tr><th>品牌</th><th>标题</th><th>父ASIN</th><th>商品ASIN</th><th>抓取时间</th><th>商品链接</th></tr></thead><tbody>${visible.map(item=>{const url=researchUrlFor(item);return `<tr><td>${escapeHtml(item['品牌']||'-')}</td><td class="title" title="${escapeHtml(item['标题']||'')}">${escapeHtml(item['标题']||'-')}</td><td>${escapeHtml(item['父ASIN']||'-')}</td><td>${escapeHtml(item['商品ASIN']||item['竞品ASIN']||'-')}</td><td>${escapeHtml(item['抓取时间']||'-')}</td><td>${url?`<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">打开链接</a>`:'-'}</td></tr>`}).join('')}</tbody></table>`;
+}
+function changeResearchLinkPage(change){researchLinkPage=Math.max(1,researchLinkPage+change);renderResearchLinks()}
+function toggleResearchLinks(){const panel=document.getElementById('researchLinkPanel');if(!panel)return;panel.classList.toggle('show');renderResearchLinks()}
+function researchLinkText(){return getResearchLinkRows().map(researchUrlFor).filter(Boolean).join('\n')}
+function copyResearchLinks(){const text=researchLinkText();if(!text){alert('当前月份没有可复制的商品链接');return}navigator.clipboard?.writeText(text).then(()=>alert(`已复制${text.split('\n').length}条商品链接`)).catch(()=>{const area=document.createElement('textarea');area.value=text;document.body.appendChild(area);area.select();document.execCommand('copy');area.remove();alert(`已复制${text.split('\n').length}条商品链接`)})}
+function csvValue(value){return '"'+String(value??'').replace(/"/g,'""')+'"'}
+function exportResearchLinks(){const rows=getResearchLinkRows();if(!rows.length){alert('请先选择有数据的调研月份');return}const csv=['调研月份,品牌,标题,父ASIN,商品ASIN,抓取时间,商品链接',...rows.map(item=>[researchMonthLabel(researchMonthFor(item)),item['品牌'],item['标题'],item['父ASIN'],item['商品ASIN']||item['竞品ASIN'],item['抓取时间'],researchUrlFor(item)].map(csvValue).join(','))].join('\n');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));link.download=`调研链接_${researchMonthLabel(researchMonthFor(rows[0]))}.csv`;link.click();URL.revokeObjectURL(link.href)}
 
 function rebuildFilterOptions(){
   const defs=[{id:'fPattern',key:'图案类型',row:1},{id:'fSleeve',key:'袖子类型',row:1},{id:'fFabric',key:'面料类型',row:1},{id:'fNeck',key:'领型',row:1},{id:'fStyle',key:'风格',row:1},{id:'fCategory',key:'品类',row:1},{id:'fBrand',key:'品牌',row:1},{id:'fPriceRange',key:'价格梯度',row:2},{id:'fRatingCount',key:'评分数梯度',row:2},{id:'fRating',key:'评分梯度',row:2},{id:'fCuff',key:'袖边类型',row:2}];

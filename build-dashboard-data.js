@@ -11,7 +11,7 @@ const fields = [
   ['袖子类型', ['袖型', '袖长']], ['面料类型', ['材质大类', '面料']], ['袖边类型', ['袖口']],
   ['领型'], ['风格', ['场合风格']], ['品类', ['类目', 'category', '大类']], ['小类'],
   ['是否衬衫'], ['版型'], ['弹力等级'], ['克重等级'], ['闭合方式'], ['商品状态', ['属性状态']],
-  ['颜色'], ['品牌', ['brand', '品牌名']], ['竞品ASIN', ['竞品AS', 'ASIN', 'asin']], ['父ASIN'],
+  ['颜色'], ['品牌', ['brand', '品牌名']], ['标题'], ['竞品ASIN', ['竞品AS', 'ASIN', 'asin']], ['父ASIN'], ['抓取时间'],
   ['链接', ['url', 'link', '产品链接']], ['Buybox价格'], ['评分'], ['父体Rating数'], ['大类排名'],
   ['小类排名'], ['变体数'], ['FBA运费'], ['销售天数'], ['上架日期']
 ];
@@ -52,6 +52,7 @@ function mapRow(source, salesMonths, snapshotOnly) {
     const value = sourceKey ? String(source[sourceKey] ?? '').trim() : '';
     if (value) item[key] = value;
   });
+  item['商品ASIN'] = item['竞品ASIN'] || '';
   item['竞品ASIN'] = item['父ASIN'] || item['竞品ASIN'] || '';
   item['版型'] = normalizeFit(item['版型']);
   item['闭合方式'] = normalizeClosure(item['闭合方式']);
@@ -59,7 +60,7 @@ function mapRow(source, salesMonths, snapshotOnly) {
   item['评分数梯度'] = ratingCountBand(item['父体Rating数']);
   item['评分梯度'] = ratingBand(item['评分']);
   item.sales = {};
-  if (snapshotOnly) item.sales[snapshotMonth(source)] = safeNum(source['父体销量' + snapshotMonth(source)]);
+  if (snapshotOnly) { item._researchMonth = snapshotMonth(source); item.sales[item._researchMonth] = safeNum(source['父体销量' + item._researchMonth]); }
   else salesMonths.forEach(month => item.sales[month] = safeNum(source['父体销量' + month]));
   return item;
 }
