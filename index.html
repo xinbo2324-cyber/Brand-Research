@@ -913,6 +913,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
+        <div class="update-log-item"><div class="update-log-date">2026-09-16<br>数据更新</div><div><strong>品牌汇总子表数据（更新）</strong>已同步最新《月度品牌调研_汇总_归类版》的“品牌汇总”子表；新增“面料来源、属性来源ASIN”两项源字段，当前看板统计继续只使用既有分析维度，不导入 BSR、NR 与统计子表。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-15<br>趋势口径</div><div><strong>跨月图表与快照分离（修复）</strong>总览月度趋势、年份对比，品牌的销量与季节走势，以及深度分析的品牌份额趋势均固定读取完整调研快照；顶部月份只控制 KPI、结构图与明细。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-15<br>数据更新</div><div><strong>品牌汇总子表数据（升级）</strong>默认数据改用《月度品牌调研_汇总_归类版》的“品牌汇总”子表；不导入 BSR、NR 与统计子表。继续按“月份 + 父ASIN”去重，并保留 4–8 月快照与趋势分析。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-14<br>快照切换</div><div><strong>全局快照月份（升级）</strong>顶部月份现在会同步切换总览、品牌对比、深度分析、竞争分析和明细数据；4–8月按同月父ASIN去重统计。趋势探索器仍保留五个月趋势，便于横向观察变化。</div></div>
@@ -1621,7 +1622,7 @@ async function loadBundledV7Data(){
 }
 async function loadBundledV8Data(){
   try{
-    const response=await fetch('brand-research-summary-v9.json.gz',{cache:'no-store'});if(!response.ok)throw new Error('优化数据文件加载失败');
+    const response=await fetch('brand-research-summary-v10.json.gz',{cache:'no-store'});if(!response.ok)throw new Error('优化数据文件加载失败');
     const payload=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
     TREND_MONTHS=payload.trendMonths;TREND_DATA=payload.trend.map(d=>{const item=normalizeMainRecord(d);item._isNew=isNewProduct(item);item._isSuccessNew=item._isNew&&isSuccessNewProduct(item);return item});
     initializeSnapshotData(payload.months,payload.sourceName);currentDataVersion=payload.version;window.SUMMARY_QA=payload.qa;rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();applyFilters();updateSnapshotScope();window.DASHBOARD_PERF.readyMs=performance.now();document.documentElement.dataset.readyMs=window.DASHBOARD_PERF.readyMs.toFixed(1);
