@@ -3,14 +3,14 @@ const zlib = require('zlib');
 const XLSX = require('./xlsx.full.min.js');
 
 const input = 'brand-research-summary-v11.xlsx';
-const output = 'brand-research-summary-v11.json.gz';
+const output = 'brand-research-summary-v12.json.gz';
 const workbook = XLSX.read(fs.readFileSync(input), { type: 'buffer' });
 const sheet = workbook.Sheets['品牌汇总'];
 if (!sheet) throw new Error('未找到“品牌汇总”子表');
 const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
 const fields = [
-  ['袖子类型', ['袖型', '袖长']], ['面料类型', ['材质大类', '面料']], ['袖边类型', ['袖口']],
+  ['袖子类型', ['袖型', '袖长']], ['面料类型', ['面料大类', '材质大类', '面料']], ['袖边类型', ['袖口']],
   ['领型'], ['风格', ['场合风格']], ['品类', ['类目', 'category', '大类']], ['小类'],
   ['是否衬衫'], ['版型'], ['弹力等级'], ['克重等级'], ['闭合方式'], ['商品状态', ['属性状态']],
   ['颜色'], ['品牌', ['brand', '品牌名']], ['标题'], ['竞品ASIN', ['竞品AS', 'ASIN', 'asin']], ['父ASIN'], ['抓取时间'],
@@ -70,7 +70,7 @@ function mapRow(source, salesMonths, snapshotOnly) {
 const latest = deduped.filter(item => item.month === latestMonth).map(item => mapRow(item.row, months, false));
 const trend = deduped.map(item => mapRow(item.row, snapshotMonths, true));
 const payload = {
-  version: 'summary-v11', sourceName: '月度品牌调研_汇总_归类版_卖家精灵补充_全量.xlsx · 品牌汇总', months, trendMonths: snapshotMonths,
+  version: 'summary-v12', sourceName: '月度品牌调研_汇总_归类版_卖家精灵补充_全量.xlsx · 品牌汇总', months, trendMonths: snapshotMonths,
   latest, trend, qa: { sourceRows: rows.length, dedupedRows: deduped.length, latestParents: latest.length, snapshotMonths, sameTimeConflicts }
 };
 const json = JSON.stringify(payload);
