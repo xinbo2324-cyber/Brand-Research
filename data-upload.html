@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理员数据更新 · 品牌市场调研看板</title>
+  <script src="xlsx.full.min.js"></script>
+  <style>
+    :root{--blue:#2864dc;--ink:#12254a;--muted:#66758f;--line:#dbe5f5;--bg:#f4f8ff;--ok:#16854e;--warn:#a35f00}
+    *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}.top{padding:24px max(20px,calc((100% - 960px)/2));color:#fff;background:linear-gradient(110deg,#285cd2,#22a0b5)}.eyebrow{font-size:11px;letter-spacing:.14em;font-weight:800;opacity:.82}.top h1{margin:4px 0;font-size:26px}.top p{margin:0;font-size:13px;opacity:.9}.wrap{max-width:960px;margin:28px auto;padding:0 20px 48px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 12px 34px rgba(29,73,145,.08);margin-bottom:16px}.card h2{margin:0 0 6px;font-size:17px}.desc{margin:0;color:var(--muted);font-size:13px}.drop{display:block;margin-top:20px;padding:34px 20px;border:2px dashed #a9c3ef;border-radius:12px;text-align:center;background:#f9fbff;cursor:pointer;transition:.2s}.drop:hover,.drop.ready{border-color:var(--blue);background:#f1f6ff}.drop strong{display:block;margin-top:6px;font-size:15px}.drop span{display:block;margin-top:4px;color:var(--muted);font-size:12px}.status{display:none;margin-top:16px;border-radius:10px;padding:12px 14px;font-size:13px}.status.show{display:block}.status.ok{background:#ecfbf3;color:#11663a;border:1px solid #bcebcf}.status.error{background:#fff1f2;color:#ae2847;border:1px solid #ffd1da}.steps{margin:16px 0 0;padding-left:22px;color:var(--muted);font-size:13px}.steps li{margin:7px 0}.publish{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;padding:16px;border-radius:12px;background:#f6f9ff;border:1px solid var(--line)}.publish p{margin:0;color:var(--muted);font-size:12px}.button{border:0;border-radius:9px;padding:11px 15px;white-space:nowrap;background:var(--blue);color:#fff;text-decoration:none;font-size:13px;font-weight:700;cursor:pointer}.button:disabled{opacity:.48;cursor:not-allowed}.note{font-size:12px;color:var(--muted)}code{padding:1px 5px;border-radius:4px;background:#edf2fb;color:#315280}@media(max-width:620px){.top h1{font-size:22px}.card{padding:18px}.publish{align-items:stretch;flex-direction:column}.button{text-align:center}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="eyebrow">BRAND RESEARCH · ADMIN</div>
+    <h1>管理员数据更新</h1>
+    <p>先在本机检查 Excel，再通过 GitHub 完成安全上传；发布后的数据对所有访问者生效。</p>
+  </header>
+  <main class="wrap">
+    <section class="card">
+      <h2>1. 选择并检查 Excel</h2>
+      <p class="desc">仅使用名为“品牌汇总”的子表。文件不会上传到本页面，也不会读取或保存你的 GitHub 密钥。</p>
+      <label class="drop" id="dropZone" for="fileInput">
+        <div style="font-size:30px">📊</div>
+        <strong>选择 .xlsx / .xls 文件</strong>
+        <span>点击选择后，浏览器会在本机检查子表和必要字段</span>
+      </label>
+      <input id="fileInput" type="file" accept=".xlsx,.xls" hidden>
+      <div class="status" id="status"></div>
+    </section>
+    <section class="card">
+      <h2>2. 上传并自动发布</h2>
+      <p class="desc">仅仓库有写入权限的管理员可完成此步骤。GitHub 收到文件后会自动生成网页所需的数据包，通常 1–2 分钟后刷新看板即可看到新数据。</p>
+      <ol class="steps">
+        <li>打开 GitHub 上传页并选择刚才已检查的文件。</li>
+        <li>将文件名设为 <code>brand-research-summary-live.xlsx</code>，用它替换仓库同名文件。</li>
+        <li>提交后等待“Rebuild dashboard data”完成，再刷新正式看板。</li>
+      </ol>
+      <div class="publish">
+        <p id="publishHint">请先完成第 1 步检查。</p>
+        <a class="button" id="publishButton" href="https://github.com/xinbo2324-cyber/Brand-Research/upload/main" target="_blank" rel="noopener" aria-disabled="true" onclick="return this.getAttribute('aria-disabled') !== 'true'">前往 GitHub 上传</a>
+      </div>
+    </section>
+    <p class="note">保留说明：旧数据可通过 GitHub 的提交历史恢复。本入口只验证格式；最终构建也会再次检查“品牌汇总”子表。</p>
+  </main>
+  <script>
+    const fileInput=document.getElementById('fileInput'),status=document.getElementById('status'),dropZone=document.getElementById('dropZone'),publishButton=document.getElementById('publishButton'),publishHint=document.getElementById('publishHint');
+    const required=['月份','父ASIN','抓取时间'];
+    function show(message,type){status.className='status show '+type;status.textContent=message}
+    function validate(file){
+      if(!file)return;
+      if(!/\.(xlsx|xls)$/i.test(file.name)){show('请选择 Excel 文件（.xlsx 或 .xls）。','error');return}
+      const reader=new FileReader();
+      reader.onerror=()=>show('无法读取此文件，请重新选择。','error');
+      reader.onload=event=>{try{
+        const workbook=XLSX.read(event.target.result,{type:'array'});
+        const sheet=workbook.Sheets['品牌汇总'];
+        if(!sheet){show('未找到“品牌汇总”子表。请使用包含该子表的数据文件。','error');return}
+        const rows=XLSX.utils.sheet_to_json(sheet,{defval:''});
+        if(!rows.length){show('“品牌汇总”子表没有可用数据。','error');return}
+        const headers=Object.keys(rows[0]);
+        const missing=required.filter(field=>!headers.includes(field));
+        const hasSales=headers.some(field=>/^父体销量20\d{4}$/.test(field));
+        if(missing.length||!hasSales){show('字段不完整：'+(missing.length?'缺少 '+missing.join('、')+'。':'')+(hasSales?'':'未找到“父体销量YYYYMM”列。'),'error');return}
+        const months=[...new Set(rows.map(row=>String(row['月份']||'').trim()).filter(Boolean))].join('、');
+        show('检查通过：'+file.name+'；“品牌汇总”共 '+rows.length.toLocaleString()+' 行；月份 '+(months||'待识别')+'。','ok');
+        dropZone.classList.add('ready');publishButton.setAttribute('aria-disabled','false');publishHint.textContent='文件已检查通过。请在 GitHub 中将上传文件命名为 brand-research-summary-live.xlsx。';
+      }catch(error){show('无法解析此 Excel：'+(error.message||'文件格式异常')+'。','error')}};
+      reader.readAsArrayBuffer(file);
+    }
+    fileInput.addEventListener('change',event=>validate(event.target.files[0]));
+  </script>
+</body>
+</html>

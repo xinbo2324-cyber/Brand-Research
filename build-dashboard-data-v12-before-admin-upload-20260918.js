@@ -2,10 +2,8 @@ const fs = require('fs');
 const zlib = require('zlib');
 const XLSX = require('./xlsx.full.min.js');
 
-// This stable pair is updated by the administrator upload flow. Historical
-// v10/v11/v12 files remain in the repository as recoverable backups.
-const input = 'brand-research-summary-live.xlsx';
-const output = 'brand-research-summary-live.json.gz';
+const input = 'brand-research-summary-v11.xlsx';
+const output = 'brand-research-summary-v12.json.gz';
 const workbook = XLSX.read(fs.readFileSync(input), { type: 'buffer' });
 const sheet = workbook.Sheets['品牌汇总'];
 if (!sheet) throw new Error('未找到“品牌汇总”子表');
@@ -72,7 +70,7 @@ function mapRow(source, salesMonths, snapshotOnly) {
 const latest = deduped.filter(item => item.month === latestMonth).map(item => mapRow(item.row, months, false));
 const trend = deduped.map(item => mapRow(item.row, snapshotMonths, true));
 const payload = {
-  version: 'summary-live', sourceName: '管理员上传数据 · 品牌汇总', months, trendMonths: snapshotMonths,
+  version: 'summary-v12', sourceName: '月度品牌调研_汇总_归类版_卖家精灵补充_全量.xlsx · 品牌汇总', months, trendMonths: snapshotMonths,
   latest, trend, qa: { sourceRows: rows.length, dedupedRows: deduped.length, latestParents: latest.length, snapshotMonths, sameTimeConflicts }
 };
 const json = JSON.stringify(payload);
