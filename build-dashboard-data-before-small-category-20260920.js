@@ -58,8 +58,6 @@ function mapRow(source, salesMonths, snapshotOnly) {
   });
   item['商品ASIN'] = item['竞品ASIN'] || '';
   item['竞品ASIN'] = item['父ASIN'] || item['竞品ASIN'] || '';
-  item['品类'] = item['小类'] || item['品类'] || '';
-  item['大类排名'] = item['小类排名'] || item['大类排名'] || '';
   item['版型'] = normalizeFit(item['版型']);
   item['闭合方式'] = normalizeClosure(item['闭合方式']);
   item['价格梯度'] = priceBand(item['Buybox价格']);

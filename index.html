@@ -681,7 +681,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <h3>数据明细（按销量排序，前<span id="tableCount">0</span>条）</h3>
     <div style="overflow-x:auto"><table><thead><tr>
       <th>ASIN</th><th>品牌</th><th>品类</th><th>图案</th><th>袖型</th><th>面料</th><th>领型</th>
-      <th>价格</th><th>评分</th><th>评论数</th><th>最新月销量</th><th>大类排名</th><th>上架日期</th><th>新品</th><th>链接</th>
+      <th>价格</th><th>评分</th><th>评论数</th><th>最新月销量</th><th>品类排名</th><th>上架日期</th><th>新品</th><th>链接</th>
     </tr><tr class="table-filter-row" id="mainFilterRow">
       <th><select id="mainColAsin" onchange="applyMainTableFilter()"><option value="">全部</option></select></th>
       <th><select id="mainColBrand" onchange="applyMainTableFilter()"><option value="">全部</option></select></th>
@@ -881,7 +881,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
       <h3>新品明细（<span id="ncTableCount">0</span>条）</h3>
       <div style="overflow-x:auto"><table><thead><tr>
         <th>ASIN</th><th>子ASIN</th><th>品牌</th><th>品类</th><th>获取时间</th><th>上架时间</th><th>距上架天数</th>
-        <th>价格</th><th>评分</th><th>评论数</th><th>大类排名</th><th>排名变化</th><th>状态</th><th>链接</th>
+        <th>价格</th><th>评分</th><th>评论数</th><th>品类排名</th><th>排名变化</th><th>状态</th><th>链接</th>
       </tr><tr class="table-filter-row" id="ncFilterRow">
         <th><select id="ncColAsin" onchange="applyNcTableFilter()"><option value="">全部</option></select></th>
         <th></th>
@@ -904,7 +904,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div style="font-size:48px;margin-bottom:16px">📂</div>
     <div style="font-size:16px;margin-bottom:8px">暂无新品数据</div>
     <div style="font-size:13px">请先点击上方「导入新品数据」按钮，导入包含获取时间的新品数据文件</div>
-    <div style="font-size:12px;color:#ccc;margin-top:12px">支持 .xlsx / .xls / .csv 格式，需包含：ASIN、品牌、品类、获取时间、上架时间、价格、评分、评论数、大类排名 等列</div>
+    <div style="font-size:12px;color:#ccc;margin-top:12px">支持 .xlsx / .xls / .csv 格式，需包含：ASIN、品牌、品类、获取时间、上架时间、价格、评分、评论数、品类排名 等列</div>
   </div>
 </div>
 
@@ -1192,7 +1192,7 @@ const SYSTEM_FIELDS=[
   {key:'链接',label:'链接',cat:'链接',aliases:['链接','url','link','产品链接']},
   {key:'价格梯度',label:'价格梯度',cat:'梯度'},{key:'评分数梯度',label:'评分数梯度',cat:'梯度'},{key:'评分梯度',label:'评分梯度',cat:'梯度'},
   {key:'Buybox价格',label:'Buybox价格',cat:'数值'},{key:'评分',label:'评分',cat:'数值'},
-  {key:'父体Rating数',label:'父体Rating数',cat:'数值'},{key:'大类排名',label:'大类排名',cat:'数值'},
+  {key:'父体Rating数',label:'父体Rating数',cat:'数值'},{key:'大类排名',label:'品类排名',cat:'数值'},
   {key:'小类排名',label:'小类排名',cat:'数值'},{key:'变体数',label:'变体数',cat:'数值'},
   {key:'FBA运费',label:'FBA运费',cat:'数值'},
   {key:'销售天数',label:'销售天数',cat:'数值'},{key:'上架日期',label:'上架日期',cat:'日期'},
