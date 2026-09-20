@@ -1441,13 +1441,13 @@ function isNewProduct(d){
   const refDate=new Date(parseInt(latestMonth.slice(0,4)),parseInt(latestMonth.slice(4))-1,1);
   return isWithinDays(d['上架日期'],90,refDate);
 }
-function isSuccessNewProduct(d){return d._isNew&&safeNum(d['大类排名'])>0&&safeNum(d['大类排名'])<=50000}
+function isSuccessNewProduct(d){const rank=safeNum(d['新品判断大类排名']||d['大类排名']);return d._isNew&&rank>0&&rank<=50000}
 
 const BRAND_CANONICAL={};
 function normalizeBrand(raw){if(!raw||raw==='暂无')return raw;const lc=raw.toLowerCase().trim();if(BRAND_CANONICAL[lc])return BRAND_CANONICAL[lc];BRAND_CANONICAL[lc]=raw;return raw}
 function getBrandDisplay(raw){return BRAND_CANONICAL[raw.toLowerCase().trim()]||raw}
 const MAIN_TEXT_FIELDS=['图案类型','印花类型','袖子类型','面料类型','袖边类型','领型','风格','品类','小类','颜色','品牌','是否衬衫','版型','弹力等级','克重等级','闭合方式','商品状态','价格梯度','评分数梯度','评分梯度','竞品ASIN','父ASIN','链接'];
-const MAIN_NUMERIC_FIELDS=['Buybox价格','评分','父体Rating数','大类排名','小类排名','变体数','FBA运费','销售天数'];
+const MAIN_NUMERIC_FIELDS=['Buybox价格','评分','父体Rating数','大类排名','小类排名','新品判断大类排名','变体数','FBA运费','销售天数'];
 function normalizeMainRecord(raw){const item={...raw};MAIN_TEXT_FIELDS.forEach(key=>{if(item[key]!==undefined&&item[key]!==null)item[key]=String(item[key]).trim()});MAIN_NUMERIC_FIELDS.forEach(key=>{if(String(item[key]??'').trim()==='92')item[key]=''});if(item.sales){const sales={};Object.keys(item.sales).forEach(m=>{sales[m]=String(item.sales[m]??'').trim()==='92'?0:item.sales[m]});item.sales=sales}item['品牌']=normalizeBrand(item['品牌']);return item}
 function prepareMainData(rawData,rawMonths){MONTHS=[...new Set((rawMonths||[]).map(String).filter(m=>/^\d{6}$/.test(m)))].sort();const base=document.getElementById('fBaseMonth');if(base&&base.value&&!MONTHS.includes(base.value))base.value='';ALL_DATA=(rawData||[]).map(d=>{const item=normalizeMainRecord(d);item._isNew=isNewProduct(item);item._isSuccessNew=item._isNew&&isSuccessNewProduct(item);return item})}
 
@@ -1586,7 +1586,7 @@ function confirmImportData(){
   const status=document.getElementById('importStatus');status.className='import-status loading';status.textContent='导入中...';
   if(pendingHeaders.includes('月份')&&pendingHeaders.includes('父ASIN')){prepareSummaryRows(pendingRows,importedFileName);status.className='import-status success';status.textContent='导入成功';saveRecentFile(importedFileName);closeImportModal();return}
   const monthPattern=/^(?:父体销量|Sales?_?)(\d{4})(\d{2})$/i,dm=[];pendingHeaders.forEach(h=>{const m=h.match(monthPattern);if(m){const ym=m[1]+m[2];if(!dm.includes(ym))dm.push(ym)}if(/^20\d{4}$/.test(h)&&!dm.includes(h))dm.push(h)});dm.sort();MONTHS=dm;
-  ALL_DATA=pendingRows.map(row=>{const item={};SYSTEM_FIELDS.forEach(f=>{item[f.key]=columnMapping[f.key]?String(row[columnMapping[f.key]]||''):''});item.sales=Object.fromEntries(MONTHS.map(m=>[m,safeNum(row['父体销量'+m]??row['Sales_'+m]??row[m])]));const normalized=normalizeMainRecord(item);normalized._isNew=isNewProduct(normalized);normalized._isSuccessNew=normalized._isNew&&isSuccessNewProduct(normalized);return normalized});TREND_DATA=[];TREND_MONTHS=[];SNAPSHOT_DATA_BY_MONTH={};GLOBAL_SNAPSHOT_MONTH='';SNAPSHOT_SOURCE_NAME='';
+  ALL_DATA=pendingRows.map(row=>{const item={};SYSTEM_FIELDS.forEach(f=>{item[f.key]=columnMapping[f.key]?String(row[columnMapping[f.key]]||''):''});item['新品判断大类排名']=String(row['大类排名']??item['大类排名']??'');item['品类']=item['小类']||item['品类']||'';item['大类排名']=item['小类排名']||item['大类排名']||'';item.sales=Object.fromEntries(MONTHS.map(m=>[m,safeNum(row['父体销量'+m]??row['Sales_'+m]??row[m])]));const normalized=normalizeMainRecord(item);normalized._isNew=isNewProduct(normalized);normalized._isSuccessNew=normalized._isNew&&isSuccessNewProduct(normalized);return normalized});TREND_DATA=[];TREND_MONTHS=[];SNAPSHOT_DATA_BY_MONTH={};GLOBAL_SNAPSHOT_MONTH='';SNAPSHOT_SOURCE_NAME='';
   rebuildFilterOptions();applyFilters();status.className='import-status success';status.textContent=`导入成功${ALL_DATA.length}条`;document.getElementById('headerDesc').textContent=`${importedFileName} · ${ALL_DATA.length}条记录 · ${MONTHS.length}个月度`;saveRecentFile(importedFileName);closeImportModal();
 }
 
@@ -1606,7 +1606,7 @@ function dedupeSummaryRows(rows){
 function mapSummaryRow(source,months,snapshotOnly){
   const aliases={'面料类型':['材质大类'],'袖边类型':['袖口'],'风格':['场合风格'],'品类':['类目'],'商品状态':['属性状态']},item={};
   SYSTEM_FIELDS.forEach(field=>{const candidates=[field.key,...(aliases[field.key]||[]),...(field.aliases||[])],sourceKey=candidates.find(key=>Object.prototype.hasOwnProperty.call(source,key));item[field.key]=sourceKey?String(source[sourceKey]??'').trim():''});
-  item['图案类型']='';item['印花类型']='';item['竞品ASIN']=item['父ASIN']||item['竞品ASIN'];item['版型']=normalizeFitValue(item['版型']);item['闭合方式']=normalizeClosureValue(item['闭合方式']);item['价格梯度']=bundledPriceBand(item['Buybox价格']);item['评分数梯度']=bundledRatingCountBand(item['父体Rating数']);item['评分梯度']=bundledRatingBand(item['评分']);item._snapshotMonth=summarySnapshotMonth(source);item._salesConflict=source.__salesConflict===true;
+  item['图案类型']='';item['印花类型']='';item['竞品ASIN']=item['父ASIN']||item['竞品ASIN'];item['新品判断大类排名']=String(source['大类排名']??item['大类排名']??'');item['品类']=item['小类']||item['品类']||'';item['大类排名']=item['小类排名']||item['大类排名']||'';item['版型']=normalizeFitValue(item['版型']);item['闭合方式']=normalizeClosureValue(item['闭合方式']);item['价格梯度']=bundledPriceBand(item['Buybox价格']);item['评分数梯度']=bundledRatingCountBand(item['父体Rating数']);item['评分梯度']=bundledRatingBand(item['评分']);item._snapshotMonth=summarySnapshotMonth(source);item._salesConflict=source.__salesConflict===true;
   item.sales=Object.fromEntries(months.map(month=>[month,snapshotOnly&&month!==item._snapshotMonth?0:safeNum(source['父体销量'+month])]));
   const normalized=normalizeMainRecord(item);normalized._isNew=isNewProduct(normalized);normalized._isSuccessNew=normalized._isNew&&isSuccessNewProduct(normalized);return normalized;
 }
@@ -1763,7 +1763,7 @@ function resetDeepFilters(){document.querySelectorAll('#page-deep .filter-panel 
 function applyFilters(){
   const started=performance.now(),done=()=>{window.DASHBOARD_PERF.lastFilterMs=performance.now()-started;document.documentElement.dataset.filterMs=window.DASHBOARD_PERF.lastFilterMs.toFixed(1)};
   const active=document.querySelector('.tab-btn.active')?.dataset.tab||'overview';
-  if(active==='overview'){const data=filterData(),months=getFilteredMonths(data),trendData=filterOverviewTrendData(),trendMonths=getPersistentTrendMonths();updateStats(data,months);updateSalesTrend(trendData,trendMonths);updateMonthlyYearCompare(trendData,trendMonths);updateCategoryChart(data,months);updateSeasonChart(data,months);updateTable(data);done();return}
+  if(active==='overview'){const data=filterData(),months=getFilteredMonths(data),trendData=filterOverviewTrendData(),trendMonths=getPersistentTrendMonths();updateStats(data,months);updateSalesTrend(trendData,trendMonths);updateMonthlyYearCompare(trendData,trendMonths);updateCategoryChart(data,months);updateSeasonChart(trendData,trendMonths);updateTable(data);done();return}
   if(active==='brand'){const data=filterBrandData(),months=getBrandMonths(),trendData=withGlobalBrandFilter(TREND_DATA.length?TREND_DATA:ALL_DATA),trendMonths=getPersistentTrendMonths();updateBrandCompare(trendData,trendMonths);updateBrandSales(trendData,trendMonths);updateBrandPrice(data);updateBrandRating(data);updateBrandCategory(data);updateBrandSeason(trendData,trendMonths);updateBrandSeasonCategory(trendData,trendMonths);updateBrandSeasonTrend(trendData,trendMonths);done();return}
   if(active==='trend'){const data=filterTrendData(),months=getTrendMonths(data);updateTrendCharts(data,months);updateTrendExplorer(data,months);done();return}
   if(active==='deep'){const data=filterDeepData(),months=getDeepMonths(data),trendData=filterDeepTrendData(),trendMonths=getPersistentTrendMonths();updateDeepCharts(data,months,trendData,trendMonths);done();return}
@@ -1903,7 +1903,7 @@ function updateMonthlyYearCompare(data,months){
   })
 }
 function updateCategoryChart(data,months){const m={};data.forEach(d=>{const c=d['品类'];if(c)m[c]=(m[c]||0)+months.reduce((s,x)=>s+safeNum(d.sales[x]),0)});const s=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);makeChart('chartCategory',{type:'bar',data:{labels:s.map(x=>x[0]),datasets:[{data:s.map(x=>x[1]),backgroundColor:s.map((_,i)=>getColor(i)),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}})}
-function updateSeasonChart(data,months){const ss={春季:0,夏季:0,秋季:0,冬季:0};const sm={春季:[3,4,5],夏季:[6,7,8],秋季:[9,10,11],冬季:[12,1,2]};data.forEach(d=>Object.entries(sm).forEach(([n,ms])=>{months.forEach(m=>{if(ms.includes(getMonthNum(m)))ss[n]+=safeNum(d.sales[m])})}));makeChart('chartSeason',{type:'doughnut',data:{labels:Object.keys(ss),datasets:[{data:Object.values(ss),backgroundColor:['#43e97b','#fa709a','#fee140','#4facfe'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}})}
+function updateSeasonChart(data,months){const ss={春季:0,夏季:0,秋季:0,冬季:0};const sm={春季:[3,4,5],夏季:[6,7,8],秋季:[9,10,11],冬季:[12,1,2]};data.forEach(d=>Object.entries(sm).forEach(([n,ms])=>{months.forEach(m=>{if(ms.includes(getMonthNum(m)))ss[n]+=safeNum(d.sales[m])})}));const values=Object.values(ss),total=sum(values);makeChart('chartSeason',{type:'doughnut',data:{labels:Object.keys(ss),datasets:[{data:values,backgroundColor:['#43e97b','#fa709a','#fee140','#4facfe'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'},datalabels:{display:ctx=>total>0&&ctx.raw>0,color:'#fff',font:{size:11,weight:'700'},anchor:'center',align:'center',formatter:value=>(value/total*100).toFixed(1)+'%'}}}})}
 let mainFullData=[];
 let mainFilteredData=[];
 
