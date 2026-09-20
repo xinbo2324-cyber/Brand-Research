@@ -50,7 +50,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Micr
 .import-status.loading{display:inline-block;background:rgba(255,200,0,.3)}
 
 /* ========== Main Layout ========== */
-.main-wrapper{display:flex;height:calc(100vh - 80px);overflow:hidden}
+.main-wrapper{display:flex;height:calc(100dvh - var(--header-height,80px));overflow:hidden}
 .content-area{flex:1;min-width:0;width:100%;overflow-y:auto;overflow-x:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);position:relative}
 body.ai-open .content-area{width:calc(100% - 420px);flex:none}
 
@@ -154,7 +154,7 @@ tr:hover td{background:rgba(102,126,234,.02)}
 .link-btn:hover{text-decoration:underline;color:var(--primary-dark)}
 
 /* ========== Modal ========== */
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center;backdrop-filter:blur(4px)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
 .modal-overlay.active{display:flex}
 .modal{background:var(--card);border-radius:var(--radius-xl);padding:28px;max-width:580px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:var(--shadow-xl)}
 .modal h2{font-size:18px;margin-bottom:12px;color:var(--text);font-weight:600}
@@ -173,6 +173,7 @@ tr:hover td{background:rgba(102,126,234,.02)}
 .btn-confirm:disabled{background:var(--border);cursor:not-allowed;box-shadow:none;transform:none}
 
 @media(max-width:900px){.charts-grid{grid-template-columns:1fr}}
+@media(max-width:900px){body.ai-open .content-area{width:100%;flex:1}.ai-panel.open{position:fixed;top:var(--header-height,80px);right:0;width:min(420px,100vw);height:calc(100dvh - var(--header-height,80px));z-index:200}.ai-panel-header,.ai-settings,.ai-chat,.ai-chat-input{min-width:0}}
 @media(max-width:700px){.trend-explorer-insights{grid-template-columns:1fr}.trend-explorer-note{margin-left:0;max-width:none}.update-log-item{grid-template-columns:1fr;gap:3px}}
 @media(max-width:600px){.filter-row{flex-direction:column}.filter-group{min-width:100%}.tab-btn{padding:10px 14px;font-size:12px}}
 .footer{text-align:center;padding:20px;color:var(--text-muted);font-size:11px}
@@ -914,6 +915,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
+        <div class="update-log-item"><div class="update-log-date">2026-09-20<br>界面修复</div><div><strong>AI 助手可视区与弹窗性能（修复）</strong>助手按真实页头高度占满剩余窗口，窄屏改为浮层展示，输入区固定可见；弹窗移除高开销背景模糊，开启更流畅。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-20<br>口径统一</div><div><strong>销量轴、AI 与新品对比统一（修复）</strong>季节分析、AI 洞察和销量轴均纳入最近12个月；品类排名统一显示小类排名，新品对比按快照月份计算上架天数与排名顺序。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-16<br>界面修复</div><div><strong>AI 助手自适应高度（修复）</strong>助手消息区现在在面板内独立滚动；标题和输入框固定可见，避免长内容挤出底部输入区。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-16<br>面料修复</div><div><strong>面料大类映射（修复）</strong>趋势探索器的面料趋势现使用“面料大类”，并兼容“面料类型、材质大类、面料”字段，恢复面料分类趋势与筛选。</div></div>
@@ -1457,7 +1459,9 @@ function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id]}
 function makeChart(id,config){destroyChart(id);const c=document.getElementById(id);if(!c)return null;charts[id]=new Chart(c.getContext('2d'),config);return charts[id]}
 
 // Resize charts when AI panel toggles
+function syncLayoutHeight(){const header=document.querySelector('.header');if(header)document.documentElement.style.setProperty('--header-height',header.offsetHeight+'px')}
 function resizeAllCharts(){
+  syncLayoutHeight();
   Object.values(charts).forEach(chart=>{
     if(chart&&chart.resize)chart.resize();
   });
@@ -2969,6 +2973,7 @@ let refreshTimer=null;
 // ========== INIT ==========
 (function(){
   window.DASHBOARD_PERF={started:performance.now(),readyMs:0,lastFilterMs:0};
+  syncLayoutHeight();
   loadBundledV8Data();
   try{
     const saved=localStorage.getItem('NC_DATA');
