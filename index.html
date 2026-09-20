@@ -914,7 +914,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
-        <div class="update-log-item"><div class="update-log-date">2026-09-20<br>口径修复</div><div><strong>季节销量改用最近12个月（修复）</strong>季节销量分布保留当前筛选产品范围，改按完整销量时间轴最近12个月计算，避免全局快照月份导致单季占比 100%。</div></div>
+        <div class="update-log-item"><div class="update-log-date">2026-09-20<br>口径统一</div><div><strong>销量轴、AI 与新品对比统一（修复）</strong>季节分析、AI 洞察和销量轴均纳入最近12个月；品类排名统一显示小类排名，新品对比按快照月份计算上架天数与排名顺序。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-16<br>界面修复</div><div><strong>AI 助手自适应高度（修复）</strong>助手消息区现在在面板内独立滚动；标题和输入框固定可见，避免长内容挤出底部输入区。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-16<br>面料修复</div><div><strong>面料大类映射（修复）</strong>趋势探索器的面料趋势现使用“面料大类”，并兼容“面料类型、材质大类、面料”字段，恢复面料分类趋势与筛选。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-16<br>数据更新</div><div><strong>品牌汇总子表数据（更新）</strong>已同步最新《月度品牌调研_汇总_归类版》的“品牌汇总”子表；新增“面料来源、属性来源ASIN”两项源字段，当前看板统计继续只使用既有分析维度，不导入 BSR、NR 与统计子表。</div></div>
@@ -1613,7 +1613,7 @@ function mapSummaryRow(source,months,snapshotOnly){
 }
 function prepareSummaryRows(rows,sourceName){
   const yearCounts={};rows.forEach(row=>{const m=String(row['抓取时间']||'').match(/(20\d{2})/);if(m)yearCounts[m[1]]=(yearCounts[m[1]]||0)+1});SUMMARY_SNAPSHOT_YEAR=Object.entries(yearCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
-  const sourceMonths=[...new Set(Object.keys(rows[0]||{}).map(h=>{const m=String(h).match(/^父体销量(20\d{4})$/);return m?m[1]:''}).filter(Boolean))].sort(),deduped=dedupeSummaryRows(rows),snapshotMonths=[...new Set(deduped.items.map(x=>x.month))].sort(),latest=snapshotMonths[snapshotMonths.length-1],allMonths=sourceMonths.filter(month=>month<=latest);
+  const sourceMonths=[...new Set(Object.keys(rows[0]||{}).map(h=>{const m=String(h).match(/^父体销量(20\d{4})$/);return m?m[1]:''}).filter(Boolean))].sort(),deduped=dedupeSummaryRows(rows),snapshotMonths=[...new Set(deduped.items.map(x=>x.month))].sort(),allMonths=sourceMonths;
   TREND_MONTHS=snapshotMonths;TREND_DATA=deduped.items.map(x=>mapSummaryRow(x.row,snapshotMonths,true));
   initializeSnapshotData(allMonths,sourceName);currentDataVersion='summary-v7';window.SUMMARY_QA={sourceRows:rows.length,dedupedRows:deduped.items.length,latestParents:ALL_DATA.length,snapshotMonths,sameTimeConflicts:deduped.sameTimeConflicts};
   rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();applyFilters();updateSnapshotScope();
@@ -1753,6 +1753,7 @@ function applyMonthWindow(months,startId,endId){const seasonStart=document.getEl
 function getFilteredMonths(data){if(GLOBAL_SNAPSHOT_MONTH)return[GLOBAL_SNAPSHOT_MONTH];let m=applyMonthWindow(getMonthsByRange('fTimeRange'),'fSeason','fSeasonEnd');const fNew=document.getElementById('fNewProduct')?.value;const fSuccess=document.getElementById('fSuccessNew')?.value;if((fNew||fSuccess)&&data&&data.length>0){const monthsWithSales=m.filter(month=>data.some(d=>safeNum(d.sales[month])>0));if(monthsWithSales.length>0)m=monthsWithSales}return m}
 function getBrandMonths(){return GLOBAL_SNAPSHOT_MONTH?[GLOBAL_SNAPSHOT_MONTH]:getMonthsByRange('brandFilterTimeRange')}
 function getPersistentTrendMonths(){return TREND_MONTHS.length?[...TREND_MONTHS]:getMonthsByRange('fTimeRange')}
+function getRecentSalesMonths(){return MONTHS.slice(-12)}
 function getTrendMonths(){let m=TREND_MONTHS.length?[...TREND_MONTHS]:getMonthsByRange('trendFilterTimeRange');const range=document.getElementById('trendFilterTimeRange')?.value||'all';if(/^20\d{2}$/.test(range))m=m.filter(x=>x.startsWith(range));else if(range==='last12')m=m.slice(-12);const season=document.getElementById('trendFilterSeason')?.value;const seasons={spring:[3,4,5],summer:[6,7,8],autumn:[9,10,11],winter:[12,1,2]};if(season&&seasons[season])m=m.filter(x=>seasons[season].includes(getMonthNum(x)));return m}
 function getDeepMonths(){return GLOBAL_SNAPSHOT_MONTH?[GLOBAL_SNAPSHOT_MONTH]:applyMonthWindow(getMonthsByRange('deepFilterTimeRange'),'deepFilterSeason','deepFilterSeasonEnd')}
 function getCompetitionMonths(){return GLOBAL_SNAPSHOT_MONTH?[GLOBAL_SNAPSHOT_MONTH]:getMonthsByRange('compFilterTimeRange')}
@@ -1764,7 +1765,7 @@ function resetDeepFilters(){document.querySelectorAll('#page-deep .filter-panel 
 function applyFilters(){
   const started=performance.now(),done=()=>{window.DASHBOARD_PERF.lastFilterMs=performance.now()-started;document.documentElement.dataset.filterMs=window.DASHBOARD_PERF.lastFilterMs.toFixed(1)};
   const active=document.querySelector('.tab-btn.active')?.dataset.tab||'overview';
-  if(active==='overview'){const data=filterData(),months=getFilteredMonths(data),trendData=filterOverviewTrendData(),trendMonths=getPersistentTrendMonths();updateStats(data,months);updateSalesTrend(trendData,trendMonths);updateMonthlyYearCompare(trendData,trendMonths);updateCategoryChart(data,months);updateSeasonChart(data,MONTHS.slice(-12));updateTable(data);done();return}
+  if(active==='overview'){const data=filterData(),months=getFilteredMonths(data),trendData=filterOverviewTrendData(),trendMonths=getPersistentTrendMonths();updateStats(data,months);updateSalesTrend(trendData,trendMonths);updateMonthlyYearCompare(trendData,trendMonths);updateCategoryChart(data,months);updateSeasonChart(data,getRecentSalesMonths());updateTable(data);done();return}
   if(active==='brand'){const data=filterBrandData(),months=getBrandMonths(),trendData=withGlobalBrandFilter(TREND_DATA.length?TREND_DATA:ALL_DATA),trendMonths=getPersistentTrendMonths();updateBrandCompare(trendData,trendMonths);updateBrandSales(trendData,trendMonths);updateBrandPrice(data);updateBrandRating(data);updateBrandCategory(data);updateBrandSeason(trendData,trendMonths);updateBrandSeasonCategory(trendData,trendMonths);updateBrandSeasonTrend(trendData,trendMonths);done();return}
   if(active==='trend'){const data=filterTrendData(),months=getTrendMonths(data);updateTrendCharts(data,months);updateTrendExplorer(data,months);done();return}
   if(active==='deep'){const data=filterDeepData(),months=getDeepMonths(data),trendData=filterDeepTrendData(),trendMonths=getPersistentTrendMonths();updateDeepCharts(data,months,trendData,trendMonths);done();return}
@@ -2377,13 +2378,13 @@ const DEFAULT_MONTHS = ["202302","202303","202304","202305","202306","202307","2
 // ========== NEW COMPARE ==========
 const DEFAULT_NC_DATA=[{"竞品ASIN": "B0CP7YL1BP", "父ASIN": "B0CRVLHN9J", "品牌": "siliteelon", "品类": "Clothing, Shoes & Jewelry", "小类": "Women's Button-Down Shirts", "获取时间": "4月", "上架日期": "2023-12-22", "Buybox价格": "18.4", "评分": "4.4", "父体Rating数": "6002", "大类排名": "729", "小类排名": "4", "链接": "https://www.amazon.com/dp/B0CP7YL1BP", "图案类型": "", "袖子类型": "", "面料类型": "", "领型": "", "_month": "2026年4月", "_isNew": false, "_isSuccessNew": false, "_rank": 729}];
 let NC_DATA=[];
-const NC_FIELDS=[{key:'竞品ASIN',label:'ASIN',aliases:['ASIN','asin','竞品ASIN']},{key:'父ASIN',label:'父ASIN',aliases:['父ASIN','父asin','parent ASIN','parent_asin','ParentASIN']},{key:'品牌',label:'品牌',aliases:['品牌','brand','品牌名']},{key:'品类',label:'品类',aliases:['品类','category','大类']},{key:'小类',label:'小类',aliases:['小类','小类目','子类目']},{key:'获取时间',label:'获取时间',aliases:['获取时间','数据获取时间','数据时间','时间','月份','采集时间','抓取时间']},{key:'上架日期',label:'上架时间',aliases:['上架日期','上架时间','listing date','上架']},{key:'Buybox价格',label:'价格',aliases:['Buybox价格','价格','price','Buybox']},{key:'评分',label:'评分',aliases:['评分','rating','分数']},{key:'父体Rating数',label:'评论数',aliases:['父体Rating数','评论数','评价数','Rating数','rating count']},{key:'大类排名',label:'大类排名',aliases:['大类排名','排名','BSR','bsr','rank','大类BSR']},{key:'小类排名',label:'小类排名',aliases:['小类排名','小类BSR']},{key:'链接',label:'链接',aliases:['链接','url','link','产品链接']},{key:'图案类型',label:'图案类型',aliases:['图案类型','图案']},{key:'袖子类型',label:'袖子类型',aliases:['袖子类型','袖型']},{key:'面料类型',label:'面料类型',aliases:['面料类型','面料']},{key:'领型',label:'领型',aliases:['领型']}];
+const NC_FIELDS=[{key:'竞品ASIN',label:'ASIN',aliases:['ASIN','asin','竞品ASIN']},{key:'父ASIN',label:'父ASIN',aliases:['父ASIN','父asin','parent ASIN','parent_asin','ParentASIN']},{key:'品牌',label:'品牌',aliases:['品牌','brand','品牌名']},{key:'品类',label:'品类',aliases:['品类','category','大类']},{key:'小类',label:'小类',aliases:['小类','小类目','子类目']},{key:'获取时间',label:'获取时间',aliases:['获取时间','数据获取时间','数据时间','时间','月份','采集时间','抓取时间']},{key:'上架日期',label:'上架时间',aliases:['上架日期','上架时间','listing date','上架']},{key:'Buybox价格',label:'价格',aliases:['Buybox价格','价格','price','Buybox']},{key:'评分',label:'评分',aliases:['评分','rating','分数']},{key:'父体Rating数',label:'评论数',aliases:['父体Rating数','评论数','评价数','Rating数','rating count']},{key:'大类排名',label:'大类排名（新品判断）',aliases:['大类排名','排名','BSR','bsr','rank','大类BSR']},{key:'小类排名',label:'小类排名',aliases:['小类排名','小类BSR']},{key:'链接',label:'链接',aliases:['链接','url','link','产品链接']},{key:'图案类型',label:'图案类型',aliases:['图案类型','图案']},{key:'袖子类型',label:'袖子类型',aliases:['袖子类型','袖型']},{key:'面料类型',label:'面料类型',aliases:['面料类型','面料']},{key:'领型',label:'领型',aliases:['领型']}];
 let ncColumnMapping={},ncPendingHeaders=[],ncPendingRows=[];
 function normalizeCollectionMonth(val){if(!val)return'';const s=String(val).trim();if(/^\d{1,2}$/.test(s)){return new Date().getFullYear()+'年'+s+'月'}if(/^\d{1,2}月$/.test(s)){return new Date().getFullYear()+'年'+s}if(/^\d{4}年\d{1,2}月$/.test(s))return s;const d=new Date(s);if(!isNaN(d.getTime()))return d.getFullYear()+'年'+(d.getMonth()+1)+'月';return s}
 function parseDaysSince(dateStr,refDate){if(!dateStr||dateStr==='暂无')return-1;try{const d=new Date(String(dateStr).split(' ')[0]);if(isNaN(d.getTime()))return-1;return Math.floor((refDate-d)/864e5)}catch(e){return-1}}
 function openNewCompareImport(){const overlay=document.createElement('div');overlay.id='ncImportOverlay';overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;justify-content:center;align-items:center';overlay.innerHTML=`<div style="background:#fff;border-radius:12px;padding:24px;max-width:600px;width:90%;position:relative"><button onclick="this.closest('#ncImportOverlay').remove()" style="position:absolute;top:10px;right:14px;font-size:18px;background:none;border:none;cursor:pointer;color:#999">&times;</button><h2 style="font-size:17px;margin-bottom:8px">导入新品数据</h2><p style="font-size:12px;color:#666;margin-bottom:12px">上传包含近月新品数据的Excel/CSV文件。</p><div id="ncDropZone" style="border:2px dashed #ccc;border-radius:10px;padding:32px;text-align:center;color:#999;cursor:pointer;margin-bottom:12px" onclick="document.getElementById('ncFileInput').click()"><div style="font-size:36px;margin-bottom:6px">📁</div><div>点击选择文件 或 拖拽文件到此处</div></div><input type="file" id="ncFileInput" accept=".xlsx,.xls,.csv" style="display:none"><div id="ncMappingArea" style="display:none"><p style="font-size:12px;font-weight:600;margin-bottom:6px">列映射确认：</p><div id="ncMappingTable" style="max-height:300px;overflow-y:auto;font-size:12px"></div></div><button id="ncConfirmBtn" onclick="confirmNewCompareImport()" disabled style="background:#667eea;color:#fff;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:8px">确认导入</button></div>`;document.body.appendChild(overlay);const dzz=overlay.querySelector('#ncDropZone');dzz.addEventListener('dragover',e=>{e.preventDefault();dzz.style.borderColor='#667eea'});dzz.addEventListener('dragleave',()=>{dzz.style.borderColor='#ccc'});dzz.addEventListener('drop',e=>{e.preventDefault();dzz.style.borderColor='#ccc';if(e.dataTransfer.files.length)handleNcFile(e.dataTransfer.files[0])});overlay.querySelector('#ncFileInput').addEventListener('change',e=>{if(e.target.files.length)handleNcFile(e.target.files[0])})}
 function handleNcFile(file){const reader=new FileReader();reader.onload=function(e){try{const data=new Uint8Array(e.target.result);const wb=XLSX.read(data,{type:'array'});const sheet=wb.Sheets[wb.SheetNames[0]];const json=XLSX.utils.sheet_to_json(sheet,{defval:''});if(!json.length){document.getElementById('ncMappingArea').style.display='block';document.getElementById('ncMappingTable').innerHTML='<p style="color:#d32f2f">文件为空</p>';return}ncPendingHeaders=Object.keys(json[0]);ncPendingRows=json;ncColumnMapping={};NC_FIELDS.forEach(f=>{let matched='';if(ncPendingHeaders.includes(f.key))matched=f.key;else{matched=ncPendingHeaders.find(h=>f.aliases.some(a=>h.toLowerCase()===a.toLowerCase()))||''}ncColumnMapping[f.key]=matched});const mapDiv=document.getElementById('ncMappingTable');mapDiv.innerHTML=NC_FIELDS.map(f=>{const opts=ncPendingHeaders.map(h=>`<option value="${h}" ${h===ncColumnMapping[f.key]?'selected':''}>${h}</option>`).join('');return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="width:80px;font-weight:500">${f.label}</span><select data-key="${f.key}" onchange="ncColumnMapping[this.dataset.key]=this.value" style="flex:1;padding:3px;border:1px solid #ddd;border-radius:4px"><option value="">--跳过--</option>${opts}</option></select><span style="width:60px;color:${ncColumnMapping[f.key]?'#1a9957':'#d32f2f'}">${ncColumnMapping[f.key]?'✓已匹配':'⚠未匹配'}</span></div>`}).join('');document.getElementById('ncMappingArea').style.display='block';document.getElementById('ncConfirmBtn').disabled=false;document.getElementById('ncConfirmBtn').textContent=`确认导入（${json.length}条数据）`;}catch(err){alert('解析失败: '+err.message)}};reader.readAsArrayBuffer(file)}
-function confirmNewCompareImport(){const overlay=document.getElementById('ncImportOverlay');NC_DATA=ncPendingRows.map(row=>{const item={};NC_FIELDS.forEach(f=>{item[f.key]=ncColumnMapping[f.key]?String(row[ncColumnMapping[f.key]]||''):''});item._month=normalizeCollectionMonth(item['获取时间']);let refDate=new Date();const ymMatch=item._month.match(/(\d{4})年(\d{1,2})月/);if(ymMatch){const year=parseInt(ymMatch[1]);const m=parseInt(ymMatch[2]);refDate=new Date(year,m,0)}const daysSince=parseDaysSince(item['上架日期'],refDate);item._isNew=daysSince>=0&&daysSince<=90;item._rank=safeNum(item['大类排名']);item._isSuccessNew=item._isNew&&item._rank>0&&item._rank<=50000;return item});overlay.remove();try{localStorage.setItem('NC_DATA',JSON.stringify(NC_DATA))}catch(e){}document.getElementById('newCompareContent').style.display='block';document.getElementById('newCompareEmpty').style.display='none';const infoEl=document.getElementById('ncInfo');if(infoEl)infoEl.textContent=`已导入${NC_DATA.length}条数据`;rebuildNcFilters();applyNewCompareFilters()}
+function confirmNewCompareImport(){const overlay=document.getElementById('ncImportOverlay');NC_DATA=ncPendingRows.map(row=>{const item={};NC_FIELDS.forEach(f=>{item[f.key]=ncColumnMapping[f.key]?String(row[ncColumnMapping[f.key]]||''):''});item['品类排名']=item['小类排名']||item['大类排名'];item._month=normalizeCollectionMonth(item['获取时间']);let refDate=new Date();const ymMatch=item._month.match(/(\d{4})年(\d{1,2})月/);if(ymMatch){const year=parseInt(ymMatch[1]);const m=parseInt(ymMatch[2]);refDate=new Date(year,m,0)}const daysSince=parseDaysSince(item['上架日期'],refDate);item._refDate=refDate.toISOString();item._isNew=daysSince>=0&&daysSince<=90;item._rank=safeNum(item['大类排名']);item._isSuccessNew=item._isNew&&item._rank>0&&item._rank<=50000;return item});overlay.remove();try{localStorage.setItem('NC_DATA',JSON.stringify(NC_DATA))}catch(e){}document.getElementById('newCompareContent').style.display='block';document.getElementById('newCompareEmpty').style.display='none';const infoEl=document.getElementById('ncInfo');if(infoEl)infoEl.textContent=`已导入${NC_DATA.length}条数据`;rebuildNcFilters();applyNewCompareFilters()}
 function rebuildNcFilters(){const brands=[...new Set(NC_DATA.map(d=>d['品牌']).filter(v=>v&&v!=='暂无'&&/[a-zA-Z]/.test(v)))].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));const cats=[...new Set(NC_DATA.map(d=>d['品类']).filter(v=>v&&v!=='暂无'))].sort();const months=[...new Set(NC_DATA.map(d=>d._month).filter(v=>v&&/^\d{4}年\d{1,2}月$/.test(v)))].sort((a,b)=>{const[,ya,ma]=a.match(/(\d{4})年(\d{1,2})月/);const[,yb,mb]=b.match(/(\d{4})年(\d{1,2})月/);return parseInt(ya)*12+parseInt(ma)-(parseInt(yb)*12+parseInt(mb))});document.getElementById('ncFilterBrand').innerHTML='<option value="">全部</option>'+brands.map(b=>'<option value="'+b+'">'+b+'</option>').join('');document.getElementById('ncFilterCategory').innerHTML='<option value="">全部</option>'+cats.map(c=>'<option value="'+c+'">'+c+'</option>').join('');document.getElementById('ncFilterMonth').innerHTML='<option value="">全部</option>'+months.map(m=>'<option value="'+m+'">'+m+'</option>').join('')}
 function filterNcData(){let data=NC_DATA;const fb=document.getElementById('ncFilterBrand');if(fb&&fb.value){const flc=fb.value.toLowerCase();data=data.filter(d=>d['品牌'].toLowerCase()===flc)}const fc=document.getElementById('ncFilterCategory');if(fc&&fc.value)data=data.filter(d=>d['品类']===fc.value);const fm=document.getElementById('ncFilterMonth');if(fm&&fm.value)data=data.filter(d=>d._month===fm.value);const fs=document.getElementById('ncFilterStatus');if(fs&&fs.value==='new')data=data.filter(d=>d._isNew);else if(fs&&fs.value==='success')data=data.filter(d=>d._isSuccessNew);else if(fs&&fs.value==='not_new')data=data.filter(d=>!d._isNew);return data}
 function applyNewCompareFilters(){const data=filterNcData();console.log('applyNewCompareFilters called, NC_DATA length:',NC_DATA.length,'filtered:',data.length);const newData=data.filter(d=>d._isNew);const newCount=newData.length;const successCount=data.filter(d=>d._isSuccessNew).length;document.getElementById('ncTotal').textContent=newCount;document.getElementById('ncSuccess').textContent=successCount;document.getElementById('ncRate').textContent=newCount>0?Math.round(successCount/newCount*100)+'%':'-';document.getElementById('ncBrands').textContent=new Set(newData.map(d=>d['品牌'])).size;const prices=newData.map(d=>safeNum(d['Buybox价格'])).filter(v=>v>0);document.getElementById('ncPrice').textContent=prices.length?'$'+avg(prices).toFixed(2):'-';const ratings=newData.map(d=>safeNum(d['评分'])).filter(v=>v>0);document.getElementById('ncRating').textContent=ratings.length?avg(ratings).toFixed(2):'-';updateNcMonthCount(data);updateNcBrandDist(newData);updateNcPriceDist(newData);updateNcTable(data)}
@@ -2409,8 +2410,9 @@ function switchNcSource(mode){
 function loadNcFromCurrent(){
   if(ALL_DATA.length===0){alert('请先在「总览」页导入数据');return}
   // Convert ALL_DATA to NC_DATA format
-  const latestMonth=MONTHS[MONTHS.length-1]||'未知';
+  const latestMonth=GLOBAL_SNAPSHOT_MONTH||MONTHS[MONTHS.length-1]||'未知';
   const monthLabel=latestMonth.slice(0,4)+'年'+latestMonth.slice(4)+'月';
+  const snapshotDate=new Date(parseInt(latestMonth.slice(0,4)),parseInt(latestMonth.slice(4))-1,1).toISOString();
   NC_DATA=ALL_DATA.filter(d=>d._isNew||d._isSuccessNew).map(d=>{
     const asin=d['竞品ASIN']||d['ASIN']||'';
     return{
@@ -2419,10 +2421,10 @@ function loadNcFromCurrent(){
       '获取时间':monthLabel,
       '上架日期':d['上架日期'],
       'Buybox价格':d['Buybox价格'],'评分':d['评分'],'父体Rating数':d['父体Rating数'],
-      '大类排名':d['大类排名'],'小类排名':d['小类排名'],
+      '大类排名':d['新品判断大类排名'],'品类排名':d['大类排名'],'小类排名':d['小类排名'],
       '链接':d['链接'],'图案类型':d['图案类型'],'袖子类型':d['袖子类型'],'面料类型':d['面料类型'],'领型':d['领型'],
       '_month':monthLabel,
-      '_isNew':d._isNew,'_isSuccessNew':d._isSuccessNew,'_rank':safeNum(d['大类排名'])
+      '_refDate':snapshotDate,'_isNew':d._isNew,'_isSuccessNew':d._isSuccessNew,'_rank':safeNum(d['新品判断大类排名'])
     };
   });
   if(NC_DATA.length===0){alert('当前数据中没有新品（上架≤90天）');return}
@@ -2456,6 +2458,7 @@ function updateNcMonthCount(data){
 function updateNcBrandDist(data){const m={};data.forEach(d=>{const b=d['品牌'];if(b&&b!=='暂无'&&/[a-zA-Z]/.test(b))m[b]=(m[b]||0)+1});const s=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);makeChart('chartNcBrandDist',{type:'doughnut',data:{labels:s.map(x=>x[0]),datasets:[{data:s.map(x=>x[1]),backgroundColor:s.map((_,i)=>getColor(i)),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}})}
 function updateNcPriceDist(data){const ranges=['0-5','5-10','10-15','15-20','20-25','25-30','30+'];const counts=ranges.map(r=>{const[lo,hi]=r==='30+'?[30,Infinity]:r.split('-').map(Number);return data.filter(d=>{const p=safeNum(d['Buybox价格']);return p>=lo&&(hi===Infinity?p>=lo:p<hi)}).length});makeChart('chartNcPriceDist',{type:'bar',data:{labels:ranges.map(r=>'$'+r),datasets:[{data:counts,backgroundColor:ranges.map((_,i)=>getColor(i)),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true}}}})}
 let ncFullData=[];
+function ncDisplayRank(d){return safeNum(d['品类排名']??d['大类排名'])}
 
 function buildNcTableFilters(data){
   ncFullData=data;
@@ -2469,7 +2472,7 @@ function buildNcTableFilters(data){
   fill('ncColPrice',uniq('Buybox价格'));
   fill('ncColRating',uniq('评分'));
   fill('ncColRatingCount',[...new Set(data.map(d=>safeNum(d['父体Rating数'])).filter(v=>v>0))].sort((a,b)=>a-b).map(String));
-  fill('ncColRank',[...new Set(data.map(d=>safeNum(d['大类排名'])).filter(v=>v>0))].sort((a,b)=>a-b).map(String));
+  fill('ncColRank',[...new Set(data.map(ncDisplayRank).filter(v=>v>0))].sort((a,b)=>a-b).map(String));
   fill('ncColStatus',['新品','成功新品','非新品']);
 }
 
@@ -2480,7 +2483,7 @@ function applyNcTableFilter(){
   f('ncColAsin','竞品ASIN');f('ncColBrand','品牌');f('ncColCategory','品类');
   f('ncColMonth','_month');f('ncColListDate','上架日期');
   f('ncColPrice','Buybox价格');f('ncColRating','评分');
-  fi('ncColRatingCount','父体Rating数');fi('ncColRank','大类排名');
+  fi('ncColRatingCount','父体Rating数');const rank=document.getElementById('ncColRank')?.value;if(rank)filtered=filtered.filter(d=>ncDisplayRank(d)===safeNum(rank));
   const fs=document.getElementById('ncColStatus')?.value||'';
   if(fs==='新品')filtered=filtered.filter(d=>d._isNew&&!d._isSuccessNew);
   else if(fs==='成功新品')filtered=filtered.filter(d=>d._isSuccessNew);
@@ -2490,9 +2493,9 @@ function applyNcTableFilter(){
 
 function renderNcTable(data){
   document.getElementById('ncTableCount').textContent=data.length;
-  const sorted=[...data].sort((a,b)=>{const aMonth=parseInt(a._month)||0;const bMonth=parseInt(b._month)||0;if(aMonth!==bMonth)return bMonth-aMonth;return safeNum(b['大类排名'])-safeNum(a['大类排名'])});
+  const sorted=[...data].sort((a,b)=>{const aMonth=parseInt(a._month)||0;const bMonth=parseInt(b._month)||0;if(aMonth!==bMonth)return bMonth-aMonth;return ncDisplayRank(a)-ncDisplayRank(b)});
   const asinRanks={};
-  NC_DATA.forEach(d=>{const asin=d['竞品ASIN']||d['ASIN']||'';if(!asin||!d._month)return;if(!asinRanks[asin])asinRanks[asin]={};asinRanks[asin][d._month]=safeNum(d['大类排名'])});
+  NC_DATA.forEach(d=>{const asin=d['竞品ASIN']||d['ASIN']||'';if(!asin||!d._month)return;if(!asinRanks[asin])asinRanks[asin]={};asinRanks[asin][d._month]=ncDisplayRank(d)});
 
   function formatDate(val){
     if(!val||val==='暂无')return '-';
@@ -2516,9 +2519,9 @@ function renderNcTable(data){
     const months=Object.keys(asinRanks[asin]||{}).sort((a,b)=>parseInt(a)-parseInt(b));
     let rankChange='-';
     if(months.length>=2){const latest=asinRanks[asin][months[months.length-1]];const prev=asinRanks[asin][months[months.length-2]];if(latest>0&&prev>0){const diff=prev-latest;rankChange=diff>0?`<span style="color:#1a9957">↑${diff}</span>`:diff<0?`<span style="color:#d32f2f">↓${Math.abs(diff)}</span>`:'<span style="color:#999">→0</span>'}}
-    const days=parseDaysSince(d['上架日期'],new Date());
+    const days=parseDaysSince(d['上架日期'],d._refDate?new Date(d._refDate):new Date());
     const statusTag=d._isSuccessNew?'<span class="badge badge-success">成功新品</span>':d._isNew?'<span class="badge badge-new">新品</span>':'<span class="badge badge-neutral">非新品</span>';
-    return `<tr><td>${d['父ASIN']||asin}</td><td>${asin}</td><td><strong>${d['品牌']}</strong></td><td>${d['品类']}</td><td>${d._month}</td><td>${formatDate(d['上架日期'])}</td><td>${days>0?days+'天':'-'}</td><td>$${d['Buybox价格']}</td><td>${d['评分']}</td><td>${safeNum(d['父体Rating数']).toLocaleString()}</td><td>${d['大类排名']}</td><td>${rankChange}</td><td>${statusTag}</td><td>${(d['链接']||asin)?'<a class="link-btn" href="'+(d['链接']||'https://www.amazon.com/dp/'+asin)+'" target="_blank">查看</a>':'-'}</td></tr>`
+    return `<tr><td>${d['父ASIN']||asin}</td><td>${asin}</td><td><strong>${d['品牌']}</strong></td><td>${d['品类']}</td><td>${d._month}</td><td>${formatDate(d['上架日期'])}</td><td>${days>0?days+'天':'-'}</td><td>$${d['Buybox价格']}</td><td>${d['评分']}</td><td>${safeNum(d['父体Rating数']).toLocaleString()}</td><td>${ncDisplayRank(d)}</td><td>${rankChange}</td><td>${statusTag}</td><td>${(d['链接']||asin)?'<a class="link-btn" href="'+(d['链接']||'https://www.amazon.com/dp/'+asin)+'" target="_blank">查看</a>':'-'}</td></tr>`
   }).join('');
 }
 
@@ -2715,7 +2718,7 @@ function insertHint(text) {
 
 function getMarketDataSummary() {
   const data = filterData();
-  const months = getFilteredMonths(data);
+  const months = getFilteredMonths(data), seasonMonths = getRecentSalesMonths();
   if(!data.length||!months.length)return '【数据概览】当前筛选没有匹配数据，请放宽筛选条件。';
   const latestMonth = months[months.length - 1];
   const totalSales = data.reduce((s, d) => s + months.reduce((ss, m) => ss + safeNum(d.sales[m]), 0), 0);
@@ -2797,7 +2800,7 @@ function getMarketDataSummary() {
   
   // === 季节销售 ===
   const seasonSales = {'冬季(12-2月)': 0, '春季(3-5月)': 0, '夏季(6-8月)': 0, '秋季(9-11月)': 0};
-  months.forEach(m => {
+  seasonMonths.forEach(m => {
     const mn = getMonthNum(m);
     const sales = data.reduce((s, d) => s + safeNum(d.sales[m]), 0);
     if ([12,1,2].includes(mn)) seasonSales['冬季(12-2月)'] += sales;
@@ -2823,8 +2826,8 @@ function getMarketDataSummary() {
 【价格分布】
 ${Object.entries(priceRanges).map(([k,v]) => `- ${k}: ${v}款 (${(v/data.length*100).toFixed(1)}%)`).join('\n')}
 
-【季节销售占比】
-${Object.entries(seasonSales).map(([k,v]) => `- ${k}: ${v.toLocaleString()} (${(v/totalSales*100).toFixed(1)}%)`).join('\n')}
+【季节销售占比（最近12个月）】
+${Object.entries(seasonSales).map(([k,v]) => `- ${k}: ${v.toLocaleString()} (${(v/(Object.values(seasonSales).reduce((a,b)=>a+b,0)||1)*100).toFixed(1)}%)`).join('\n')}
 
 【TOP10品牌(累计销量)】
 ${topBrands.map(([b, s], i) => `${i+1}. ${b}: ${s.toLocaleString()} (${brandCount[b]}款, 均价$${avg(brandPrices[b]).toFixed(1)}, 均分${avg(brandRatings[b]).toFixed(1)})`).join('\n')}
@@ -3004,7 +3007,7 @@ function exportExcel(){
   const months=getFilteredMonths(data);
   const latestMonth=months[months.length-1]||MONTHS[MONTHS.length-1];
   const rows=data.map(d=>{
-    const row={'ASIN':d['竞品ASIN']||'','品牌':d['品牌'],'品类':d['品类'],'小类':d['小类'],'图案类型':d['图案类型'],'袖子类型':d['袖子类型'],'面料类型':d['面料类型'],'领型':d['领型'],'Buybox价格':d['Buybox价格'],'评分':d['评分'],'父体Rating数':d['父体Rating数'],'大类排名':d['大类排名'],'小类排名':d['小类排名'],'变体数':d['变体数'],'上架日期':d['上架日期'],'新品':d._isNew?'是':'否','成功新品':d._isSuccessNew?'是':'否'};
+    const row={'ASIN':d['竞品ASIN']||'','品牌':d['品牌'],'品类':d['品类'],'小类':d['小类'],'图案类型':d['图案类型'],'袖子类型':d['袖子类型'],'面料类型':d['面料类型'],'领型':d['领型'],'Buybox价格':d['Buybox价格'],'评分':d['评分'],'父体Rating数':d['父体Rating数'],'品类排名':d['大类排名'],'变体数':d['变体数'],'上架日期':d['上架日期'],'新品':d._isNew?'是':'否','成功新品':d._isSuccessNew?'是':'否'};
     months.forEach(m=>{row['销量_'+m]=safeNum(d.sales[m])});
     return row;
   });
@@ -3323,7 +3326,7 @@ function getChartData(moduleId){
     }
     case 'season':{
       const ss={春季:0,夏季:0,秋季:0,冬季:0};
-      data.forEach(d=>months.forEach(m=>{const mn=getMonthNum(m);if([3,4,5].includes(mn))ss['春季']+=safeNum(d.sales[m]);else if([6,7,8].includes(mn))ss['夏季']+=safeNum(d.sales[m]);else if([9,10,11].includes(mn))ss['秋季']+=safeNum(d.sales[m]);else ss['冬季']+=safeNum(d.sales[m])}));
+      data.forEach(d=>getRecentSalesMonths().forEach(m=>{const mn=getMonthNum(m);if([3,4,5].includes(mn))ss['春季']+=safeNum(d.sales[m]);else if([6,7,8].includes(mn))ss['夏季']+=safeNum(d.sales[m]);else if([9,10,11].includes(mn))ss['秋季']+=safeNum(d.sales[m]);else ss['冬季']+=safeNum(d.sales[m])}));
       return Object.entries(ss).map(([k,v])=>k+':'+v.toLocaleString()).join(', ');
     }
     case 'brand_rank':{
@@ -3757,7 +3760,7 @@ function exportSyncExcelData(){
   const data=filterData();
   const months=getFilteredMonths(data);
   const rows=data.map(d=>{
-    const row={'ASIN':d['竞品ASIN']||'','品牌':d['品牌'],'品类':d['品类'],'小类':d['小类'],'图案类型':d['图案类型'],'袖子类型':d['袖子类型'],'面料类型':d['面料类型'],'领型':d['领型'],'Buybox价格':d['Buybox价格'],'评分':d['评分'],'父体Rating数':d['父体Rating数'],'大类排名':d['大类排名'],'小类排名':d['小类排名'],'变体数':d['变体数'],'上架日期':d['上架日期'],'新品':d._isNew?'是':'否','成功新品':d._isSuccessNew?'是':'否'};
+    const row={'ASIN':d['竞品ASIN']||'','品牌':d['品牌'],'品类':d['品类'],'小类':d['小类'],'图案类型':d['图案类型'],'袖子类型':d['袖子类型'],'面料类型':d['面料类型'],'领型':d['领型'],'Buybox价格':d['Buybox价格'],'评分':d['评分'],'父体Rating数':d['父体Rating数'],'品类排名':d['大类排名'],'变体数':d['变体数'],'上架日期':d['上架日期'],'新品':d._isNew?'是':'否','成功新品':d._isSuccessNew?'是':'否'};
     months.forEach(m=>{row['销量_'+m]=safeNum(d.sales[m])});
     return row;
   });

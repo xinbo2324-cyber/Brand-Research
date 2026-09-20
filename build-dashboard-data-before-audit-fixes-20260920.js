@@ -47,7 +47,7 @@ const deduped = [...grouped.values()];
 const snapshotMonths = [...new Set(deduped.map(item => item.month))].sort();
 const latestMonth = snapshotMonths.at(-1);
 const sourceMonths = [...new Set(Object.keys(rows[0] || {}).map(key => String(key).match(/^父体销量(20\d{4})$/)?.[1]).filter(Boolean))].sort();
-const months = sourceMonths;
+const months = sourceMonths.filter(month => month <= latestMonth);
 
 function mapRow(source, salesMonths, snapshotOnly) {
   const item = {};
