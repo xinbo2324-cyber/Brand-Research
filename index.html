@@ -916,6 +916,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
         <div class="update-log-item"><div class="update-log-date">2026-09-20<br>界面修复</div><div><strong>AI 助手可视区与弹窗性能（修复）</strong>助手按真实页头高度占满剩余窗口，窄屏改为浮层展示，输入区固定可见；弹窗移除高开销背景模糊，开启更流畅。</div></div>
+        <div class="update-log-item"><div class="update-log-date">2026-09-21<br>销量时间轴</div><div><strong>销量趋势改用完整月份轴（修复）</strong>趋势图与季节分析使用源数据中的完整销量月份列；顶部快照月份只控制当前产品集合、KPI、结构图、竞争和链接明细，不再把销量趋势限制为数据获取月份。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-20<br>口径统一</div><div><strong>销量轴、AI 与新品对比统一（修复）</strong>季节分析、AI 洞察和销量轴均纳入最近12个月；品类排名统一显示小类排名，新品对比按快照月份计算上架天数与排名顺序。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-16<br>界面修复</div><div><strong>AI 助手自适应高度（修复）</strong>助手消息区现在在面板内独立滚动；标题和输入框固定可见，避免长内容挤出底部输入区。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-16<br>面料修复</div><div><strong>面料大类映射（修复）</strong>趋势探索器的面料趋势现使用“面料大类”，并兼容“面料类型、材质大类、面料”字段，恢复面料分类趋势与筛选。</div></div>
@@ -1618,7 +1619,7 @@ function mapSummaryRow(source,months,snapshotOnly){
 function prepareSummaryRows(rows,sourceName){
   const yearCounts={};rows.forEach(row=>{const m=String(row['抓取时间']||'').match(/(20\d{2})/);if(m)yearCounts[m[1]]=(yearCounts[m[1]]||0)+1});SUMMARY_SNAPSHOT_YEAR=Object.entries(yearCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
   const sourceMonths=[...new Set(Object.keys(rows[0]||{}).map(h=>{const m=String(h).match(/^父体销量(20\d{4})$/);return m?m[1]:''}).filter(Boolean))].sort(),deduped=dedupeSummaryRows(rows),snapshotMonths=[...new Set(deduped.items.map(x=>x.month))].sort(),allMonths=sourceMonths;
-  TREND_MONTHS=snapshotMonths;TREND_DATA=deduped.items.map(x=>mapSummaryRow(x.row,snapshotMonths,true));
+  TREND_MONTHS=allMonths;TREND_DATA=deduped.items.map(x=>mapSummaryRow(x.row,allMonths,false));
   initializeSnapshotData(allMonths,sourceName);currentDataVersion='summary-v7';window.SUMMARY_QA={sourceRows:rows.length,dedupedRows:deduped.items.length,latestParents:ALL_DATA.length,snapshotMonths,sameTimeConflicts:deduped.sameTimeConflicts};
   rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();applyFilters();updateSnapshotScope();
 }

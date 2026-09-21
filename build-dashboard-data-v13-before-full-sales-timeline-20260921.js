@@ -67,18 +67,15 @@ function mapRow(source, salesMonths, snapshotOnly) {
   item['评分数梯度'] = ratingCountBand(item['父体Rating数']);
   item['评分梯度'] = ratingBand(item['评分']);
   item.sales = {};
-  item._researchMonth = snapshotMonth(source);
-  if (snapshotOnly) { item.sales[item._researchMonth] = safeNum(source['父体销量' + item._researchMonth]); }
+  if (snapshotOnly) { item._researchMonth = snapshotMonth(source); item.sales[item._researchMonth] = safeNum(source['父体销量' + item._researchMonth]); }
   else salesMonths.forEach(month => item.sales[month] = safeNum(source['父体销量' + month]));
   return item;
 }
 
 const latest = deduped.filter(item => item.month === latestMonth).map(item => mapRow(item.row, months, false));
-// Trend records keep the complete sales timeline; snapshot month only controls
-// the product collection used by KPI, structure, competition and link views.
-const trend = deduped.map(item => mapRow(item.row, months, false));
+const trend = deduped.map(item => mapRow(item.row, snapshotMonths, true));
 const payload = {
-  version: 'summary-live', sourceName: '管理员上传数据 · 品牌汇总', months, trendMonths: months,
+  version: 'summary-live', sourceName: '管理员上传数据 · 品牌汇总', months, trendMonths: snapshotMonths,
   latest, trend, qa: { sourceRows: rows.length, dedupedRows: deduped.length, latestParents: latest.length, snapshotMonths, sameTimeConflicts }
 };
 const json = JSON.stringify(payload);
