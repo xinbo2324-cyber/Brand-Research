@@ -1635,7 +1635,7 @@ async function loadBundledV8Data(){
   try{
     const response=await fetch('brand-research-summary-live.json.gz',{cache:'no-store'});if(!response.ok)throw new Error('优化数据文件加载失败');
     const payload=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
-    TREND_MONTHS=payload.trendMonths||payload.months||[];TREND_DATA=[];SNAPSHOT_SOURCE_NAME=payload.sourceName||'';GLOBAL_SNAPSHOT_MONTH=TREND_MONTHS.at(-1)||'';
+    TREND_MONTHS=payload.trendMonths||payload.months||[];TREND_DATA=[];SNAPSHOT_SOURCE_NAME=payload.sourceName||'';GLOBAL_SNAPSHOT_MONTH='';
     prepareMainData(payload.latest||[],payload.months||[]);currentDataVersion=payload.version;window.SUMMARY_QA=payload.qa;rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();applyFilters();updateSnapshotScope();window.DASHBOARD_PERF.readyMs=performance.now();document.documentElement.dataset.readyMs=window.DASHBOARD_PERF.readyMs.toFixed(1);loadTrendData(payload.trendMetaFile||'brand-research-trend-live.json.gz',payload.trendSalesFile||'brand-research-sales-live.json.gz',payload.months||[]);
   }catch(error){console.warn('优化数据加载失败，改用Excel数据',error);loadBundledV7Data()}
 }
