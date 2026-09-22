@@ -1653,7 +1653,7 @@ async function loadTrendSales(file){
     const response=await fetch(file+'?v='+encodeURIComponent(currentDataVersion),{cache:'no-store'});if(!response.ok)throw new Error('趋势销量数据加载失败');
     const payload=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();const months=payload.months||TREND_MONTHS;
     TREND_DATA.forEach((item,index)=>{const values=payload.sales?.[index]||[];item.sales=Object.fromEntries(months.map((month,i)=>[month,safeNum(values[i])]));});
-    prepareMainData(SNAPSHOT_DATA_BY_MONTH[GLOBAL_SNAPSHOT_MONTH]||[],TREND_MONTHS);window.DASHBOARD_PERF.trendReadyMs=performance.now();document.documentElement.dataset.trendReadyMs=window.DASHBOARD_PERF.trendReadyMs.toFixed(1);applyFilters();updateSnapshotScope();
+    prepareMainData(SNAPSHOT_DATA_BY_MONTH[GLOBAL_SNAPSHOT_MONTH]||[],MONTHS);window.DASHBOARD_PERF.trendReadyMs=performance.now();document.documentElement.dataset.trendReadyMs=window.DASHBOARD_PERF.trendReadyMs.toFixed(1);applyFilters();updateSnapshotScope();
   }catch(error){console.warn('趋势销量数据加载失败',error)}
 }
 
