@@ -1780,7 +1780,7 @@ function getRecentSalesMonths(){return MONTHS.slice(-12)}
 function getTrendMonths(){let m=TREND_MONTHS.length?[...TREND_MONTHS]:getMonthsByRange('trendFilterTimeRange');const range=document.getElementById('trendFilterTimeRange')?.value||'all';if(/^20\d{2}$/.test(range))m=m.filter(x=>x.startsWith(range));else if(range==='last12')m=m.slice(-12);const season=document.getElementById('trendFilterSeason')?.value;const seasons={spring:[3,4,5],summer:[6,7,8],autumn:[9,10,11],winter:[12,1,2]};if(season&&seasons[season])m=m.filter(x=>seasons[season].includes(getMonthNum(x)));return m}
 function getDeepMonths(){return GLOBAL_SNAPSHOT_MONTH?[GLOBAL_SNAPSHOT_MONTH]:applyMonthWindow(getMonthsByRange('deepFilterTimeRange'),'deepFilterSeason','deepFilterSeasonEnd')}
 function getCompetitionMonths(){return GLOBAL_SNAPSHOT_MONTH?[GLOBAL_SNAPSHOT_MONTH]:getMonthsByRange('compFilterTimeRange')}
-function applyGlobalBrandFilter(){applyFilters()}
+function applyGlobalBrandFilter(){renderResearchLinks(true);applyFilters()}
 function resetFilters(){document.querySelectorAll('#page-overview .filter-panel select').forEach(s=>s.value='');document.getElementById('fTimeRange').value='all';document.getElementById('fSeason').value='';document.getElementById('fSeasonEnd').value='';applyFilters()}
 function resetBrandFilters(){['fBrandA','fBrandB','fBrandC','fBrandD','fBrandE','fBrandF','fBrandSeasonCat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});document.getElementById('brandFilterTimeRange').value='all';applyBrandCompare()}
 function resetTrendFilters(){document.querySelectorAll('#page-trend .filter-panel select').forEach(s=>s.value='');applyFilters()}
