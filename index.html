@@ -173,7 +173,7 @@ tr:hover td{background:rgba(102,126,234,.02)}
 .btn-confirm:disabled{background:var(--border);cursor:not-allowed;box-shadow:none;transform:none}
 
 @media(max-width:900px){.charts-grid{grid-template-columns:1fr}}
-@media(max-width:900px){body.ai-open .content-area{width:100%;flex:1}.ai-panel.open{position:fixed;top:var(--header-height,80px);right:0;width:min(420px,100vw);height:calc(100dvh - var(--header-height,80px));z-index:200}.ai-panel-header,.ai-settings,.ai-chat,.ai-chat-input{min-width:0}}
+@media(max-width:900px){body.ai-open .content-area{width:100%;flex:1}.ai-panel.open{position:fixed;top:var(--header-height,80px);right:0;width:min(420px,100vw);max-width:100vw!important;height:calc(100dvh - var(--header-height,80px));z-index:200}.ai-panel-header,.ai-settings,.ai-chat,.ai-chat-input{min-width:0}}
 @media(max-width:700px){.trend-explorer-insights{grid-template-columns:1fr}.trend-explorer-note{margin-left:0;max-width:none}.update-log-item{grid-template-columns:1fr;gap:3px}}
 @media(max-width:600px){.filter-row{flex-direction:column}.filter-group{min-width:100%}.tab-btn{padding:10px 14px;font-size:12px}}
 .footer{text-align:center;padding:20px;color:var(--text-muted);font-size:11px}
@@ -915,6 +915,7 @@ th{background:#f4f6fb;color:#5d6980;border-bottom-color:#dfe5ef}td{border-bottom
     <div class="chart-card" style="margin-bottom:16px">
       <h3 style="font-size:14px;margin-bottom:10px">更新日志</h3>
       <div class="update-log">
+        <div class="update-log-item"><div class="update-log-date">2026-09-22<br>验收修复</div><div><strong>异步快照、链接筛选与窄屏助手（修复）</strong>趋势销量回填后同步当前快照指标；全局品牌筛选同步作用于链接明细；窄屏助手不再超出视口，并减少趋势加载时的重复重绘。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-20<br>界面修复</div><div><strong>AI 助手可视区与弹窗性能（修复）</strong>助手按真实页头高度占满剩余窗口，窄屏改为浮层展示，输入区固定可见；弹窗移除高开销背景模糊，开启更流畅。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-21<br>销量时间轴</div><div><strong>销量趋势改用完整月份轴（修复）</strong>趋势图与季节分析使用源数据中的完整销量月份列；顶部快照月份只控制当前产品集合、KPI、结构图、竞争和链接明细，不再把销量趋势限制为数据获取月份。</div></div>
         <div class="update-log-item"><div class="update-log-date">2026-09-21<br>加载优化</div><div><strong>趋势数据异步加载（性能优化）</strong>首屏先加载当前快照和页面主体，完整趋势属性与 42 个月销量在后台加载；趋势数据完成后自动刷新趋势图和季节分析，统计口径不变。</div></div>
@@ -1644,7 +1645,7 @@ async function loadTrendData(metaFile,salesFile,allMonths){
     const response=await fetch(metaFile+'?v='+encodeURIComponent(currentDataVersion),{cache:'no-store'});if(!response.ok)throw new Error('趋势属性数据加载失败');
     const payload=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();TREND_MONTHS=payload.trendMonths||TREND_MONTHS;
     TREND_DATA=(payload.trend||[]).map(d=>{const item=normalizeMainRecord(d);item.sales={};item._isNew=isNewProduct(item);item._isSuccessNew=item._isNew&&isSuccessNewProduct(item);return item});
-    initializeSnapshotData(allMonths,SNAPSHOT_SOURCE_NAME);rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();applyFilters();updateSnapshotScope();await loadTrendSales(salesFile);
+    initializeSnapshotData(allMonths,SNAPSHOT_SOURCE_NAME);rebuildFilterOptions();rebuildResearchMonthFilter();renderResearchLinks();updateSnapshotScope();await loadTrendSales(salesFile);
   }catch(error){console.warn('趋势属性数据加载失败',error)}
 }
 async function loadTrendSales(file){
@@ -1652,7 +1653,7 @@ async function loadTrendSales(file){
     const response=await fetch(file+'?v='+encodeURIComponent(currentDataVersion),{cache:'no-store'});if(!response.ok)throw new Error('趋势销量数据加载失败');
     const payload=await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();const months=payload.months||TREND_MONTHS;
     TREND_DATA.forEach((item,index)=>{const values=payload.sales?.[index]||[];item.sales=Object.fromEntries(months.map((month,i)=>[month,safeNum(values[i])]));});
-    window.DASHBOARD_PERF.trendReadyMs=performance.now();document.documentElement.dataset.trendReadyMs=window.DASHBOARD_PERF.trendReadyMs.toFixed(1);applyFilters();
+    prepareMainData(SNAPSHOT_DATA_BY_MONTH[GLOBAL_SNAPSHOT_MONTH]||[],TREND_MONTHS);window.DASHBOARD_PERF.trendReadyMs=performance.now();document.documentElement.dataset.trendReadyMs=window.DASHBOARD_PERF.trendReadyMs.toFixed(1);applyFilters();updateSnapshotScope();
   }catch(error){console.warn('趋势销量数据加载失败',error)}
 }
 
@@ -1711,7 +1712,7 @@ function applyGlobalSnapshotMonth(){
   if(globalBrand&&[...globalBrand.options].some(option=>option.value===selectedBrand))globalBrand.value=selectedBrand;
   rebuildResearchMonthFilter();if(select)select.value=month;updateSnapshotScope();renderResearchLinks(true);applyFilters();
 }
-function getResearchLinkRows(){const month=document.getElementById('researchMonthFilter')?.value||'';return month?TREND_DATA.filter(item=>researchMonthFor(item)===month):[]}
+function getResearchLinkRows(){const month=document.getElementById('researchMonthFilter')?.value||'';return withGlobalBrandFilter(month?TREND_DATA.filter(item=>researchMonthFor(item)===month):[])}
 function rebuildResearchMonthFilter(){
   const select=document.getElementById('researchMonthFilter');if(!select)return;const previous=select.value,counts={};TREND_DATA.forEach(item=>{const month=researchMonthFor(item);if(month)counts[month]=(counts[month]||0)+1});
   const months=TREND_MONTHS.filter(month=>counts[month]);select.innerHTML='<option value="">选择快照月份</option>'+months.map(month=>`<option value="${month}">${researchMonthLabel(month)}（${counts[month]}个父体）</option>`).join('');select.value=months.includes(GLOBAL_SNAPSHOT_MONTH)?GLOBAL_SNAPSHOT_MONTH:(months.includes(previous)?previous:(months.at(-1)||''));
