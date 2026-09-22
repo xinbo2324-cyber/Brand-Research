@@ -173,7 +173,7 @@ tr:hover td{background:rgba(102,126,234,.02)}
 .btn-confirm:disabled{background:var(--border);cursor:not-allowed;box-shadow:none;transform:none}
 
 @media(max-width:900px){.charts-grid{grid-template-columns:1fr}}
-@media(max-width:900px){body.ai-open .content-area{width:100%;flex:1}.ai-panel.open{position:fixed;top:var(--header-height,80px);right:0;width:min(420px,100%)!important;max-width:100%!important;height:calc(100dvh - var(--header-height,80px));z-index:200}.ai-panel-header,.ai-settings,.ai-chat,.ai-chat-input{min-width:0}}
+@media(max-width:900px){body.ai-open .content-area{width:100%;flex:1}.ai-panel.open{position:fixed;top:var(--header-height,80px);right:0;width:min(420px,calc(100vw - 15px))!important;max-width:calc(100vw - 15px)!important;height:calc(100dvh - var(--header-height,80px));z-index:200}.ai-panel-header,.ai-settings,.ai-chat,.ai-chat-input{min-width:0}}
 @media(max-width:700px){.trend-explorer-insights{grid-template-columns:1fr}.trend-explorer-note{margin-left:0;max-width:none}.update-log-item{grid-template-columns:1fr;gap:3px}}
 @media(max-width:600px){.filter-row{flex-direction:column}.filter-group{min-width:100%}.tab-btn{padding:10px 14px;font-size:12px}}
 .footer{text-align:center;padding:20px;color:var(--text-muted);font-size:11px}
